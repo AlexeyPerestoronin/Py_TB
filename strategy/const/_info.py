@@ -5,6 +5,8 @@ class INFO:
         COMMISSION = "commission"
         PROFIT = "profit"
         COEFFICIENT = "coefficient"
+        PRICE_PRECISION = "price_precision"
+        VOLUME_PRECISION = "volume_precision"
         class VOLUME:
             TOTAL_CLEAN = "total_clean"
             TOTAL_REAL = "total_real"
@@ -15,7 +17,7 @@ class INFO:
             TOTAL_LOST = "total_lost"
     class STEP:
         DIFFERENCE_RATE = "difference_rate"
-        AVERAGE_PRICE = "average_price"
+        AVERAGE_RATE = "average_rate"
         TOTAL_BUY_COST = "total_buy_cost"
         SELL_RATE = "sell_rate"
         SELL_RATE_0 = "sell_rate_0"

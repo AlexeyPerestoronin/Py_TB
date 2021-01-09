@@ -1,16 +1,16 @@
 import math
 import copy
 
-import strategy
+from strategy.stairs import Simple
 import strategy.const as const
 
-class StairsDependency(strategy.StairsSimple):
+class Dependency(Simple):
     def __init__(self):
-        strategy.StairsSimple.__init__(self)
+        Simple.__init__(self)
 
     # brief: gets sell-rate for next-step
     # return: the sell-rate for next-step
-    def GetNextSellRate(self):
+    def _GetNextSellRate(self):
         next_sell_rate = None
         if self._previous_step:
             next_sell_rate = self._previous_step._buy_rate
@@ -20,7 +20,7 @@ class StairsDependency(strategy.StairsSimple):
 
     # brief: gets buy-cost for next step
     # return: the buy-cost for next-step
-    def GetNextBuyCost(self):
+    def GetBuyCost(self):
         next_buy_cost = None
         if self._previous_step:
             next_buy_cost = self._previous_step._buy_cost * self._coefficient
