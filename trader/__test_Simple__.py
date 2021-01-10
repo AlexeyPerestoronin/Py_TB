@@ -15,7 +15,7 @@ import strategy.stairs as ss
 
 class Keys:
     def __init__(self):
-        self._publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.publick\.key$"))[0])
+        self._publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.public\.key$"))[0])
         self._secret_key = bytes(faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.secret\.key$"))[0]), encoding="utf-8")
 
 class SimpleStump(unittest.TestCase, Simple):
@@ -37,7 +37,7 @@ class SimpleStump(unittest.TestCase, Simple):
         strategy_before = self._strategy
         sell_order_id_before = self._sell_order_id
         buy_order_id_before = self._buy_order_id
-        self.Init(self.save_catalog_test)
+        self.SetSaveCatalog(self.save_catalog_test)
         self._Save()
         self._Restore()
         self.assertTrue(sell_order_id_before, self._sell_order_id)
@@ -67,9 +67,9 @@ class Test_Simple1(unittest.TestCase, Keys):
         save_catalog = os.path.join(faf.SplitPath1(sys.argv[0]), "SC-USDT_RUB")
         self._trader.SetInitCost(500)
         self._trader.SetPair("USDT_RUB")
-        self._trader.Init(save_catalog)
-        self._trader.Start()
-        self._trader.Iterate()
+        self._trader.SetSaveCatalog(save_catalog)
+        # self._trader.Start()
+        # self._trader.Iterate()
 
 class Test_Simple2(unittest.TestCase, Keys):
     def setUp(self):
@@ -87,9 +87,9 @@ class Test_Simple2(unittest.TestCase, Keys):
         save_catalog = os.path.join(faf.SplitPath1(sys.argv[0]), "SC-BTC_USDT")
         self._trader.SetInitCost(10)
         self._trader.SetPair("BTC_USDT")
-        self._trader.Init(save_catalog)
-        self._trader.Start()
-        self._trader.Iterate()
+        self._trader.SetSaveCatalog(save_catalog)
+        # self._trader.Start()
+        # self._trader.Iterate()
 
 if __name__ == "__main__":
     unittest.main()

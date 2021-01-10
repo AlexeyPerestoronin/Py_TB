@@ -1,6 +1,7 @@
 **/__pycache__
 **/.vscode
+**/.trading
 **/*.log
 **/*.txt
-**/*.publick.key
+**/*.public.key
 **/*.secret.key

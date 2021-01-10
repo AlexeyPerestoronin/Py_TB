@@ -12,7 +12,7 @@ from connection import Exmo
 
 class Test_Exmo(unittest.TestCase):
     def setUp(self):
-        publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.publick\.key$"))[0])
+        publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.public\.key$"))[0])
         secret_key = bytes(faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.secret\.key$"))[0]), encoding="utf-8")
         self.__exmo = Exmo()
         self.__exmo.SetPublickKey(publick_key)
@@ -61,6 +61,7 @@ class Test_Exmo(unittest.TestCase):
     def GetUserDeals(self):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-USDT_RUB.log", json.dumps(self.__exmo.GetUserDeals("USDT_RUB"), indent=4))
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-BTC_USDT.log", json.dumps(self.__exmo.GetUserDeals("BTC_USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-ETH_USDT.log", json.dumps(self.__exmo.GetUserDeals("ETH_USDT"), indent=4))
 
     def GetOrderDeals(self):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetOrderDeals-sell-order.log", json.dumps(self.__exmo.GetOrderDeals("11589112646"), indent=4))
@@ -83,7 +84,7 @@ class Test_Exmo(unittest.TestCase):
         # self.GetTrades()
         # self.GetOrderBook()
         # self.GetTicker()
-        # self.GetPairSettings()
+        self.GetPairSettings()
         # self.GetCommissionForPair()
         # self.GetCurrencyList()
         # self.GetUserInfo()

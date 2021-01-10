@@ -105,7 +105,8 @@ class Simple:
             time.sleep(30)
         initial_order_rate = self._connection.GetOrderRate(initial_order_id)
         # initializing trade-strategy on base of first buy-order metadata
-        self._strategy = self._strategy.ComputeToStep(1)
+        if self._strategy.GetStep():
+            self._strategy = self._strategy.ComputeToStep(1)
         self._strategy.SetCommission(self._connection.GetCommissionForPair(self._pair))
         self._strategy.SetPricePrecision1(self._connection.GetPrecisionForPair(self._pair))
         self._strategy.Init(initial_order_rate, self._init_cost)
@@ -128,6 +129,7 @@ class Simple:
         is_buy_open = self._connection.IsOrderOpen(self._buy_order_id)
         if not is_sell_open and is_buy_open:
             self._connection.CancelOrder(self._buy_order_id)
+            self._InitNewTrading()
             trading_result = True
         elif not is_buy_open and is_sell_open:
             self._connection.CancelOrder(self._sell_order_id)
@@ -147,6 +149,7 @@ class Simple:
             elif is_sell_complete and not is_buy_complete:
                 # TODO: there is need implement stop-trading-conditions logic
                 self._InitNewTrading()
+                trading_result = True
             elif is_buy_complete and not is_sell_complete:
                 self._strategy = self._strategy.ComputeNextStep()
                 self._SetOrders()
@@ -168,7 +171,7 @@ class Simple:
 
     # brief: trading initialization
     # param: save_catalog - a catalog name in which will saving all trading's files
-    def Init(self, save_catalog):
+    def SetSaveCatalog(self, save_catalog):
         self._save_catalog = save_catalog
         faf.CreateDirectory(self._save_catalog)
         self._save_strategy = os.path.join(self._save_catalog, "strategy.save.settings.txt")

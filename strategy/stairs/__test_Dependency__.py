@@ -17,11 +17,11 @@ class Test_StairsDependency(unittest.TestCase, Test_Srairs):
     def setUp(self):
         Test_Srairs.__init__(self, Dependency(), "StairsDependency.log")
         self._stairs.SetCommission(1.0)
-        self._stairs.SetCoefficient(2)
-        self._stairs.SetPricePrecision1(2)
+        self._stairs.SetCoefficient(1.5)
+        self._stairs.SetPricePrecision1(4)
         self._stairs.SetVolumePrecision1(8)
-        self._stairs.SetProfit(1.01)
-        self._stairs.Init(40470.0, 10)
+        self._stairs.SetProfit(1.001)
+        self._stairs.Init(1230, 10)
 
 
     def test_GetID(self):
