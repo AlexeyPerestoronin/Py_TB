@@ -1,0 +1,28 @@
+{
+    "public_key" : "Alexey_Perestoronin.public.key",
+    "secret_key" : "Alexey_Perestoronin.secret.key",
+    "tradings" : [
+        {
+            "pair" : "ETH_USDT",
+            "init_cost" : 10,
+            "save_catalog" : "SC-ETH_USDT",
+            "strategy" : {
+                "ID" : "0000-0002",
+                "profit" : 1.001,
+                "coefficient" : 1.5,
+                "volume_precision" : 8
+            }
+        },
+        {
+            "pair" : "ETH_RUB",
+            "init_cost" : 700,
+            "save_catalog" : "SC-ETH_RUB",
+            "strategy" : {
+                "ID" : "0000-0002",
+                "profit" : 1.002,
+                "coefficient" : 1.8,
+                "volume_precision" : 8
+            }
+        }
+    ]
+}

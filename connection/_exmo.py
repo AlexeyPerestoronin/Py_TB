@@ -6,12 +6,15 @@ import urllib
 import hashlib
 import http.client
 
+from connection.__timer import Wait
+
 # brief: implements logic for interaction with Exmo-exchange
-class Exmo:
+class Exmo(Wait):
     url = "api.exmo.com"
     api_version = "v1.1"
 
     def __init__(self):
+        Wait.__init__(self, 0.5)
         self._publick_key = None
         self._secret_key = None
 
@@ -20,6 +23,7 @@ class Exmo:
     # param: params - params for the specifing of the method
     # return: json-string with response on the requested method
     def _QueryPrivate(self, api_method, **params):
+        self.Waiting()
         return Exmo.Query(api_method, self._publick_key, self._secret_key, **params)
 
     # brief: sets the publick-key for current connection
