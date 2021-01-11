@@ -39,10 +39,11 @@ def main():
     traders = CreateTraders(settings, connector)
     for trader in traders:
         trader.Start()
+    waiter = c.Wait(15)
     while True:
         for trader in traders:
             trader.Iterate()
-        time.sleep(30)
+        waiter.Waiting()
 
 if __name__ == "__main__":
     main()

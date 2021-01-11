@@ -140,9 +140,10 @@ class Simple:
             is_sell_complete = self._connection.IsOrderComplete(self._pair, self._sell_order_id)
             is_buy_complete = self._connection.IsOrderComplete(self._pair, self._buy_order_id)
             if is_sell_complete and is_buy_complete:
-                strategy = self._strategy.ComputeToStep(1)
-                strategy.Init(self._strategy.GetBuyRate(), self._strategy.GetBuyCost())
-                self._strategy = strategy
+                reinitial_rate = self._connection.GetOrderRate(self._buy_order_id)
+                reinitial_cost = self._strategy.GetBuyCost()
+                self._strategy = self._strategy.ComputeToStep(1)
+                self._strategy.Init(reinitial_rate, reinitial_cost)
                 self._SaveTradingPreview(10)
                 self._SetOrders()
                 self._Save()

@@ -6,7 +6,7 @@ import urllib
 import hashlib
 import http.client
 
-from connection.__timer import Wait
+from connection._timer import Wait
 
 # brief: implements logic for interaction with Exmo-exchange
 class Exmo(Wait):
