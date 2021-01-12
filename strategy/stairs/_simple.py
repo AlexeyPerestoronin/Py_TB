@@ -92,16 +92,15 @@ class Simple:
     # return: trade-rate for sell
     def _ComputeSellRate(self):
         self._sell_quantity = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
-        self._sell_rate = self.ComputeSellRateForProfit(self._sell_quantity, self._profit)
+        self._sell_rate = self.ComputeSellRate(self._sell_quantity, self._init_cost * self._profit)
 
     # brief: compute buy-rate of strategy-trade for current strategy-step to buy-action
     # return: computed buy-rate
     def _ComputeBuyRate(self):
         sell_rate = self._GetNextSellRate()
         self._buy_cost = self.GetBuyCost()
-        volume = self._init_cost / self._init_rate * self._commission
         sell_cost = self._init_cost + self._buy_cost
-        self._buy_rate = self._RoundDown(- (self._buy_cost * self._commission) / (volume - ((self._profit * sell_cost) / (sell_rate * self._commission))))
+        self._buy_rate = self._RoundDown(- (self._buy_cost * self._commission) / (self._sell_quantity - ((self._profit * sell_cost) / (sell_rate * self._commission))))
 
     # brief: set the coefficient of each next cost increaseble
     # param: coefficient - new each next cost increaseble
@@ -179,6 +178,11 @@ class Simple:
     def GetBuyCost(self):
         return self._init_cost * self._coefficient
 
+    # brief: gets buy-quantity for current step
+    # return: the buy-quantity for current step
+    def GetBuyQuantity(self):
+        return self.GetBuyCost() / self.GetBuyRate()
+
     # brief: compute next trade-step based of current trade-step
     # return: next trade-step
     def ComputeNextStep(self):
@@ -217,10 +221,11 @@ class Simple:
         return difference_between_rate
 
     # brief: compute sell-rate of strategy-trade for current strategy-step for desired profit
-    # param: desired_profit - desired profit from sell
+    # param: sell_quantity - target quantity of sell-currency
+    # param: sell_cost - desired cost of sell
     # return: trade-rate for sell
-    def ComputeSellRateForProfit(self, sell_quantity, desired_profit):
-        return self._RoundUp((self._init_cost * desired_profit) / (self._commission * sell_quantity))
+    def ComputeSellRate(self, sell_quantity, sell_cost):
+        return self._RoundUp(sell_cost / (self._commission * sell_quantity))
 
     # brief: saves trade-strategy in file
     # note1: current trade-step will be saved too
@@ -313,7 +318,7 @@ class Simple:
                     const.INFO.DESCRIPTION : "currency-sell-rate need for realized actual profit of the trading-strategy"
                 },
                 const.INFO.STEP.SELL_RATE_0 : {
-                    const.INFO.VALUE : self.ComputeSellRateForProfit(self._sell_quantity, 1.0),
+                    const.INFO.VALUE : self.ComputeSellRate(self._sell_quantity, self._init_cost * 1.0),
                     const.INFO.DESCRIPTION : "currency-sell-rate need for realized 0%-profit of the trading-strategy"
                 },
                 const.INFO.STEP.NEXT_BUY_RATE : {
