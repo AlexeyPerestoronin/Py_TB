@@ -80,21 +80,26 @@ class Test_Exmo(unittest.TestCase):
         self.__exmo.CancelOrder(order_id)
         self.assertFalse(self.__exmo.IsOrderOpen(order_id))
 
+    def ComputeUserBalanceIn(self):
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "ComputeUserBalanceIn-USDT.log", json.dumps(self.__exmo.ComputeUserBalanceIn("USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "ComputeUserBalanceIn-RUB.log", json.dumps(self.__exmo.ComputeUserBalanceIn("RUB"), indent=4))
+
     def test_PerformTest(self):
         # self.GetTrades()
         # self.GetOrderBook()
         # self.GetTicker()
-        self.GetPairSettings()
+        # self.GetPairSettings()
         # self.GetCommissionForPair()
         # self.GetCurrencyList()
         # self.GetUserInfo()
         # self.GetUserBalance()
         # self.GetUserOpenOrders()
         # self.GetUserCancelledOrders()
-        self.GetUserDeals()
+        # self.GetUserDeals()
         # self.GetOrderDeals()
         # self.CreateOrder_Buy_Check_Cancel()
         # self.CreateOrder_BuyTotal_Check_Cancel()
+        self.ComputeUserBalanceIn()
         pass
 
 if __name__ == "__main__":

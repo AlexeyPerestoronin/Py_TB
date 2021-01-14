@@ -6,6 +6,7 @@ import urllib
 import hashlib
 import http.client
 
+import common.algorithms as alg
 from connection._timer import Wait
 
 # brief: implements logic for interaction with Exmo-exchange
@@ -202,6 +203,47 @@ class Exmo(Wait):
         else:
             raise "unspecified type of order: {}".format(order_deals)
 
+    # brief: gets current buy-rate for target currency-pair
+    # param: pair - target currency-pair
+    # return: current buy-rate
+    def GetCurrentBuyRate(self, pair):
+        return float(self.GetTicker()[pair]["buy_price"])
+
+    # brief: gets current sell-rate for target currency-pair
+    # param: pair - target currency-pair
+    # return: current sell-rate
+    def GetCurrentSellRate(self, pair):
+        return float(self.GetTicker()[pair]["sell_price"])
+
+    # brief: computes user-balance in target currency
+    # param: currency - target currency
+    # return: computed user-balance
+    def ComputeUserBalanceIn(self, currency):
+        total_balance = 0.
+        user_info = self.GetUserInfo()
+        free_balances = alg.RemoveFromDictIf(user_info["balances"], lambda key, value: float(value) == 0.)
+        free_balances = alg.PerformForEachDict(free_balances, lambda key, value: float(value))
+        reserved_balances = alg.RemoveFromDictIf(user_info["reserved"], lambda key, value: float(value) == 0.)
+        reserved_balances = alg.PerformForEachDict(reserved_balances, lambda key, value: float(value))
+        for balances in [free_balances, reserved_balances]:
+            for real_currency, real_quantity in balances.items():
+                if currency == real_currency:
+                    total_balance += real_quantity
+                else:
+                    currency_pair = None
+                    converting_rate = None
+                    try:
+                        currency_pair = self._ToPair(real_currency, currency)
+                        converting_rate = self.GetCurrentSellRate(currency_pair)
+                        commission = self.GetCommissionForPair(currency_pair)
+                        total_balance += real_quantity * converting_rate * commission
+                    except:
+                        currency_pair = self._ToPair(currency, real_currency)
+                        converting_rate = self.GetCurrentBuyRate(currency_pair)
+                        commission = self.GetCommissionForPair(currency_pair)
+                        total_balance += real_quantity / converting_rate * commission
+        return total_balance
+
     # brief: gets list of the deals in currency pair
     @staticmethod
     def GetTrades(pair):
@@ -285,3 +327,9 @@ class Exmo(Wait):
     @staticmethod
     def _2FromPair(pair):
         return pair.split('_')[1]
+
+    # brief: creates currency-pair from two currencyes
+    # pram:
+    @staticmethod
+    def _ToPair(currency_1, currency_2):
+        return "{}_{}".format(currency_1, currency_2)
