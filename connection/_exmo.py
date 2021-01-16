@@ -15,7 +15,11 @@ class Exmo(Wait):
     api_version = "v1.1"
 
     def __init__(self):
-        Wait.__init__(self, 0.5)
+        Wait.__init__(self, 0.5) # Exmo-exchange allow to send get/post-requests two time in second
+        # promotion(s)
+        self._taker_commission_promotion = None
+        self._maker_commission_promotion = None
+        # key(s)
         self._publick_key = None
         self._secret_key = None
 
@@ -36,6 +40,20 @@ class Exmo(Wait):
     # param: publick_key - target secret-key
     def SetSecretKey(self, secret_key):
         self._secret_key = secret_key
+
+    # NOTE: for understanding of taker and maker orders see https://info.exmo.me/ru/torgovye-vozmozhnosti/chto-takoe-sdelki-taker-maker/
+
+    # brief: sets the promotion coefficient for taker commission
+    # note1: taker promotion coefficient is the value on which taker-commission will be multiply
+    # param: taker_commission_promotion - target value of taker promotion coefficient
+    def SetTakerCommissionPromotion(self, taker_commission_promotion):
+        self._taker_commission_promotion = taker_commission_promotion
+
+    # brief: sets the promotion coefficient for maker commission
+    # note1: maker promotion coefficient is the value on which maker-commission will be multiply
+    # param: maker_commission_promotion - target value of maker promotion coefficient
+    def SetMakerCommissionPromotion(self, maker_commission_promotion):
+        self._maker_commission_promotion = maker_commission_promotion
 
     # NOTE: for detail information about all below class-methods see https://documenter.getpostman.com/view/10287440/SzYXWKPi#public_api?utm_source=site&utm_medium=articles%22
 
@@ -235,14 +253,24 @@ class Exmo(Wait):
                     try:
                         currency_pair = self._ToPair(real_currency, currency)
                         converting_rate = self.GetCurrentSellRate(currency_pair)
-                        commission = self.GetCommissionForPair(currency_pair)
+                        commission = self.GetTakerCommission(currency_pair)
                         total_balance += real_quantity * converting_rate * commission
                     except:
                         currency_pair = self._ToPair(currency, real_currency)
                         converting_rate = self.GetCurrentBuyRate(currency_pair)
-                        commission = self.GetCommissionForPair(currency_pair)
+                        commission = self.GetTakerCommission(currency_pair)
                         total_balance += real_quantity / converting_rate * commission
         return total_balance
+
+    # brief: gets commission for taker-orders
+    # return: the commission value for the currency-pair like: 1.0 - if commission is 0%; 0.996 - if commission is 0.4%
+    def GetTakerCommission(self, pair):
+        return 1 - float(Exmo.GetPairSettings()[pair]["commission_taker_percent"]) * self._taker_commission_promotion / 100
+
+    # brief: gets commission for maker-orders
+    # return: the commission value for the currency-pair like: 1.0 - if commission is 0%; 0.996 - if commission is 0.4%
+    def GetMakerCommission(self, pair):
+        return 1 - float(Exmo.GetPairSettings()[pair]["commission_maker_percent"]) * self._maker_commission_promotion / 100
 
     # brief: gets list of the deals in currency pair
     @staticmethod
@@ -268,12 +296,6 @@ class Exmo(Wait):
     @staticmethod
     def GetCurrencyList():
         return Exmo.Query("currency")
-
-    # brief: gets commission for trading currency-pair
-    # return: the commission value for the currency-pair like: 1.0 - if commission is 0%; 0.996 - if commission is 0.4%
-    @staticmethod
-    def GetCommissionForPair(pair):
-        return 1 - float(Exmo.GetPairSettings()[pair]["commission_taker_percent"]) / 100
 
     # brief: gets precision for computing trade-rate for the trade-pair
     # return: precision for trade-pair
