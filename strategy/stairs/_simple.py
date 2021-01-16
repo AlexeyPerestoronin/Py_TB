@@ -87,6 +87,11 @@ class Simple:
             self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_cost
             self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] += lost_cost
 
+    # brief: gets next coefficient
+    # return: next coefficient
+    def _GetNextCoefficient(self):
+        return self._coefficient
+
     # brief: gets sell-rate for next-step
     # return: the sell-rate for next-step
     def _GetNextSellRate(self):
@@ -106,7 +111,7 @@ class Simple:
 
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
-        self._buy_cost = self._init_cost * self._coefficient
+        self._buy_cost = self._init_cost * self._GetNextCoefficient()
 
     # brief: compute buy-rate for current strategy-step to buy-action
     def _ComputeBuyRate(self):
@@ -116,6 +121,8 @@ class Simple:
             raise error.ExceededAvailableCurrency()
         sell_cost = self._init_cost + self._buy_cost
         self._buy_rate = self._PPD(- (self._buy_cost * self._buy_commission) / (self._sell_quantity - ((self._profit * sell_cost) / (sell_rate * self._sell_commission))))
+        if self._buy_rate <= 0.:
+            raise error.BuyRateIsLessZero()
 
     # brief: compute buy-quantity for current strategy-step to buy-action
     def _ComputeBuyQuantity(self):

@@ -48,7 +48,8 @@ class Test_Srairs:
             self._stairs = self._stairs.ComputeNextStep()
             self._LogStep()
         except error.ExceededAvailableCurrency:
-            return
+            pass
+        return
 
     def test_Test(self):
         with open("{}/{}".format(faf.SplitPath1(sys.argv[0]), self._log_file_name), "w") as file_writer:

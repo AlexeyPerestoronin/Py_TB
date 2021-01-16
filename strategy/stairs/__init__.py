@@ -2,3 +2,4 @@
 
 from strategy.stairs._simple import *
 from strategy.stairs._dependent import *
+from strategy.stairs._progressive import *

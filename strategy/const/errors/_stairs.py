@@ -11,3 +11,10 @@ class ExceededAvailableCurrency(Stairs):
         Stairs.__init__(self)
     def __str__(self):
         return "exceeded available currency for trade-strategy"
+
+# brief: exception of unavailable buy-rate: buy-rate less zero
+class BuyRateIsLessZero(Stairs):
+    def __init__(self):
+        Stairs.__init__(self)
+    def __str__(self):
+        return "buy-rate is less zero"
