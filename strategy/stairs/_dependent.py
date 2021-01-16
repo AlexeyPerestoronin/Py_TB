@@ -11,22 +11,17 @@ class Dependency(Simple):
     # brief: gets sell-rate for next-step
     # return: the sell-rate for next-step
     def _GetNextSellRate(self):
-        next_sell_rate = None
         if self._previous_step:
-            next_sell_rate = self._previous_step._buy_rate
+            return self._previous_step._buy_rate
         else:
-            next_sell_rate = self._init_rate
-        return next_sell_rate
+            return self._init_rate
 
-    # brief: gets buy-cost for next step
-    # return: the buy-cost for next-step
-    def GetBuyCost(self):
-        next_buy_cost = None
+    # brief: compute buy-cost for current strategy-step to buy-action
+    def _ComputeBuyCost(self):
         if self._previous_step:
-            next_buy_cost = self._previous_step._buy_cost * self._coefficient
+            self._buy_cost = self._previous_step._buy_cost * self._coefficient
         else:
-            next_buy_cost = self._init_cost * self._coefficient
-        return next_buy_cost
+            self._buy_cost = self._init_cost * self._coefficient
 
     # brief: get strategy-ID
     # return: strategy-ID

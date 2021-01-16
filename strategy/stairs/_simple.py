@@ -6,26 +6,37 @@ import decimal
 import strategy
 import common.faf as faf
 import strategy.const as const
+import strategy.const.errors as error
 
 _d = decimal.Decimal
 
 # brief: implements simple strairs trade-strategy
 class Simple:
     def __init__(self):
-        self._step = None
+        # global(s)
         self._price_precision = None
-        self._volume_precision = None
+        self._quantity_precision = None
         self._coefficient = None
-        self._commission = None
         self._profit = None
+        self._available_currency = None
+        # init(s)
         self._init_rate = None
         self._init_cost = None
+        # sell(s)
+        self._sell_cost = None
         self._sell_rate = None
         self._sell_quantity = None
-        self._buy_rate = None
+        self._sell_commission = None
+        # buy(s)
         self._buy_cost = None
+        self._buy_rate = None
+        self._buy_quantity = None
+        self._buy_commission = None
+        # steps(s)
+        self._step = None
         self._next_step = None
         self._previous_step = None
+        # statistic(s)
         self._statistic = {
             const.INFO.GLOBAL.VOLUME : {
                 const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN : 0,
@@ -38,25 +49,18 @@ class Simple:
                 const.INFO.GLOBAL.COST.TOTAL_LOST : 0,
             }
         }
-
-    # brief: round-up the number to predefined precision
-    # param: number - target number for round
-    # return: rounded number
-    def _RoundUp(self, number):
-        return float(_d(number).quantize(self._price_precision, decimal.ROUND_CEILING))
-
-    # brief: round-down the number to predefined precision
-    # param: number - target number for round
-    # return: rounded number
-    def _RoundDown(self, number):
-        return float(_d(number).quantize(self._price_precision, decimal.ROUND_FLOOR))
+        # precision(s)
+        self._PPU = None
+        self._PPD = None
+        self._QPU = None
+        self._QPD = None
 
     # collects statistic for all steps of trade-strategy
     def _CollectStatistic(self):
         if not self._previous_step:
             clean_quantity = self._init_cost / self._init_rate
-            real_quantity = clean_quantity * self._commission
-            real_quantity = float(_d(real_quantity).quantize(self._volume_precision, decimal.ROUND_FLOOR))
+            real_quantity = clean_quantity * self._buy_commission
+            real_quantity = self._QPD(real_quantity)
             lost_quantity = clean_quantity - real_quantity
             # collection of statistics (volume)
             self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] = clean_quantity
@@ -69,8 +73,8 @@ class Simple:
         else:
             # collection of statistics (volume)
             clean_quantity = self._previous_step._buy_cost / self._previous_step._buy_rate
-            real_quantity = clean_quantity * self._previous_step._commission
-            real_quantity = float(_d(real_quantity).quantize(self._volume_precision, decimal.ROUND_FLOOR))
+            real_quantity = clean_quantity * self._previous_step._buy_commission
+            real_quantity = self._QPD(real_quantity)
             lost_quantity = clean_quantity - real_quantity
             self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] += clean_quantity
             self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] += real_quantity
@@ -88,75 +92,117 @@ class Simple:
     def _GetNextSellRate(self):
         return self._init_rate
 
-    # brief: compute rate of strategy-trade for current strategy-step to sell-action
-    # return: trade-rate for sell
+    # brief: compute sell-cost for current strategy-step to sell-action
+    def _ComputeSellCost(self):
+        self._sell_cost = self._PPD(self._sell_quantity * self._sell_rate)
+
+    # brief: compute sell-rate for current strategy-step to sell-action
     def _ComputeSellRate(self):
-        self._sell_quantity = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
         self._sell_rate = self.ComputeSellRate(self._sell_quantity, self._init_cost * self._profit)
 
-    # brief: compute buy-rate of strategy-trade for current strategy-step to buy-action
-    # return: computed buy-rate
+    # brief: compute sell-quantity for current-strategy-step to sell-action
+    def _ComputeSellQuantity(self):
+        self._sell_quantity = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
+
+    # brief: compute buy-cost for current strategy-step to buy-action
+    def _ComputeBuyCost(self):
+        self._buy_cost = self._init_cost * self._coefficient
+
+    # brief: compute buy-rate for current strategy-step to buy-action
     def _ComputeBuyRate(self):
         sell_rate = self._GetNextSellRate()
-        self._buy_cost = self.GetBuyCost()
+        self._available_currency -= self._buy_cost
+        if self._available_currency < 0.:
+            raise error.ExceededAvailableCurrency()
         sell_cost = self._init_cost + self._buy_cost
-        self._buy_rate = self._RoundDown(- (self._buy_cost * self._commission) / (self._sell_quantity - ((self._profit * sell_cost) / (sell_rate * self._commission))))
+        self._buy_rate = self._PPD(- (self._buy_cost * self._buy_commission) / (self._sell_quantity - ((self._profit * sell_cost) / (sell_rate * self._sell_commission))))
+
+    # brief: compute buy-quantity for current strategy-step to buy-action
+    def _ComputeBuyQuantity(self):
+        self._buy_quantity = self._QPD(self._buy_cost / self._buy_rate)
+
+    # brief: compute current strategy-step
+    def _ComputeCurrentStep(self):
+        self._CollectStatistic()
+        # (sell) sequence of calculations
+        self._ComputeSellQuantity()
+        self._ComputeSellRate()
+        self._ComputeSellCost()
+        # (buy) sequence of calculations
+        self._ComputeBuyCost()
+        self._ComputeBuyRate()
+        self._ComputeBuyQuantity()
 
     # brief: set the coefficient of each next cost increaseble
     # param: coefficient - new each next cost increaseble
     def SetCoefficient(self, coefficient):
         self._coefficient = coefficient
 
-    # brief: set a trade-commission
-    # param: commission - new value of a trade-commission
-    def SetCommission(self, commission):
-        self._commission = commission
+    # brief: set a trade-commission for buy-order
+    # param: buy_commission - new value of a trade-commission for buy-order
+    def SetCommissionBuy(self, buy_commission):
+        self._buy_commission = buy_commission
+
+    # brief: set a trade-commission for sell-order
+    # param: sell_commission - new value of a trade-commission for sell-order
+    def SetCommissionSell(self, sell_commission):
+        self._sell_commission = sell_commission
 
     # brief: set a trade-profit
     # param: profit - new value of a trade-profit
     def SetProfit(self, profit):
         self._profit = profit
 
+    # brief: set a available currency
+    # param: available_currency - new value of a available currency
+    def SetAvailableCurrency(self, available_currency):
+        self._available_currency = available_currency
+
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision (must be positive integer number)
-    def SetVolumePrecision1(self, precision):
-        self._volume_precision = "1."
-        for _ in range(precision):
-            self._volume_precision+="0"
-        self._volume_precision = _d(self._volume_precision)
+    def SetQuantityPrecision1(self, precision):
+        self.SetQuantityPrecision2(self._ComputePrecision(precision))
 
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision
-    def SetVolumePrecision2(self, precision):
-        self._volume_precision = _d(precision)
+    def SetQuantityPrecision2(self, precision):
+        self._quantity_precision = _d(precision)
+        self._QPU = lambda value: self._RoundUp(value, self._quantity_precision)
+        self._QPD = lambda value: self._RoundDown(value, self._quantity_precision)
 
     # brief: set a precision of all mathematical operations performs with trade-rate
     # param: precision - new value of a precision (must be positive integer number)
     def SetPricePrecision1(self, precision):
-        self._price_precision = "1."
-        for _ in range(precision):
-            self._price_precision+="0"
-        self._price_precision = _d(self._price_precision)
+        self.SetPricePrecision2(self._ComputePrecision(precision))
 
     # brief: set a precision of all mathematical operations performs with trade-rate
     # param: precision - new value of a precision
     def SetPricePrecision2(self, precision):
         self._price_precision = _d(precision)
+        self._PPU = lambda value: self._RoundUp(value, self._price_precision)
+        self._PPD = lambda value: self._RoundDown(value, self._price_precision)
 
     # brief: strategy initialization
     # note1: this function must be called only after call of SetCoefficient, SetCommission and SetProfit functions
     # param: rate - currency rate on first-step
     # param: cost - currency cost on first-step
     def Init(self, rate, cost):
+        self._init_rate = self._PPU(rate)
+        self._init_cost = cost
         self._step = 1
         if self._previous_step:
             self._step = self._previous_step._step + 1
             self._statistic = copy.deepcopy(self._previous_step._statistic)
-        self._init_rate = self._RoundUp(rate)
-        self._init_cost = cost
-        self._CollectStatistic()
-        self._ComputeSellRate()
-        self._ComputeBuyRate()
+        else:
+            self._available_currency -= self._init_cost
+            if self._available_currency < 0.:
+                raise error.ExceededAvailableCurrency()
+        self._ComputeCurrentStep()
+
+    # brief: gets sell-cost for current step
+    # return: the sell-cost for current step
+    def GetSellCost(self):
+        return self._sell_cost
 
     # brief: gets sell-rate for current step
     # return: the sell-rate for current step
@@ -168,33 +214,37 @@ class Simple:
     def GetSellQuantity(self):
         return self._sell_quantity
 
+    # brief: gets buy-cost for current step
+    # return: the buy-cost for current step
+    def GetBuyCost(self):
+        return self._buy_cost
+
     # brief: gets buy-rate for current step
     # return: the buy-rate for current step
     def GetBuyRate(self):
         return self._buy_rate
 
-    # brief: gets buy-cost for current step
-    # return: the buy-cost for current step
-    def GetBuyCost(self):
-        return self._init_cost * self._coefficient
-
     # brief: gets buy-quantity for current step
     # return: the buy-quantity for current step
     def GetBuyQuantity(self):
-        return self.GetBuyCost() / self.GetBuyRate()
+        return self._buy_quantity
 
     # brief: compute next trade-step based of current trade-step
     # return: next trade-step
     def ComputeNextStep(self):
         self._next_step = type(self)()
-        self._next_step.SetProfit(self._profit)
-        self._next_step.SetPricePrecision2(self._price_precision)
-        self._next_step.SetVolumePrecision2(self._volume_precision)
-        self._next_step.SetCommission(self._commission)
-        self._next_step.SetCoefficient(self._coefficient)
-        cost = self._init_cost + self._buy_cost
-        rate = (math.pow(self._commission, 2) * self._GetNextSellRate()) / self._profit
         self._next_step._previous_step = self
+        # migrate settings(1)
+        self._next_step.SetAvailableCurrency(self._available_currency)
+        self._next_step.SetQuantityPrecision2(self._quantity_precision)
+        self._next_step.SetPricePrecision2(self._price_precision)
+        self._next_step.SetCommissionSell(self._sell_commission)
+        self._next_step.SetCommissionBuy(self._buy_commission)
+        self._next_step.SetCoefficient(self._coefficient)
+        self._next_step.SetProfit(self._profit)
+        # compute cost and rate for next step (as if it is cost and rate for first step)
+        cost = self._init_cost + self._buy_cost
+        rate = (math.pow(self._buy_commission, 2) * self._GetNextSellRate()) / self._profit
         self._next_step.Init(rate, cost)
         return self._next_step
 
@@ -225,21 +275,21 @@ class Simple:
     # param: sell_cost - desired cost of sell
     # return: trade-rate for sell
     def ComputeSellRate(self, sell_quantity, sell_cost):
-        return self._RoundUp(sell_cost / (self._commission * sell_quantity))
+        return self._PPU((sell_cost / self._sell_commission) / sell_quantity)
 
     # brief: saves trade-strategy in file
     # note1: current trade-step will be saved too
     # param: filepath - full path to save-file
     def SaveToFile(self, filepath):
-        first_step = self
-        while first_step._previous_step:
-            first_step = first_step._previous_step
+        first_step = self.ComputeToStep(1)
         saved_params = {
             repr(const.INFO.STEP) : self._step,
+            const.INFO.STEP.AVAILABLE_CURRENCY : first_step._available_currency,
             const.INFO.GLOBAL.PRICE_PRECISION : str(first_step._price_precision).count('0'),
-            const.INFO.GLOBAL.VOLUME_PRECISION : str(first_step._volume_precision).count('0'),
+            const.INFO.GLOBAL.QUANTITY_PRECISION : str(first_step._quantity_precision).count('0'),
             const.INFO.GLOBAL.COEFFICIENT : first_step._coefficient,
-            const.INFO.GLOBAL.COMMISSION : first_step._commission,
+            const.INFO.GLOBAL.BUY_COMMISSION : first_step._buy_commission,
+            const.INFO.GLOBAL.SELL_COMMISSION : first_step._sell_commission,
             const.INFO.GLOBAL.PROFIT : first_step._profit,
             const.INFO.STEP.AVERAGE_RATE : first_step._init_rate,
             const.INFO.STEP.TOTAL_BUY_COST : first_step._init_cost,
@@ -251,16 +301,20 @@ class Simple:
     def GetInfo(self):
         info = {
             const.INFO.GLOBAL : {
-                const.INFO.GLOBAL.COMMISSION : {
-                    const.INFO.VALUE : self._commission,
-                    const.INFO.DESCRIPTION : "commission for buy/sale transactions imposed by the trading-exchange"
+                const.INFO.GLOBAL.BUY_COMMISSION : {
+                    const.INFO.VALUE : self._buy_commission,
+                    const.INFO.DESCRIPTION : "commission for buy transactions imposed by the trading-exchange"
+                },
+                const.INFO.GLOBAL.SELL_COMMISSION : {
+                    const.INFO.VALUE : self._sell_commission,
+                    const.INFO.DESCRIPTION : "commission for sale transactions imposed by the trading-exchange"
                 },
                 const.INFO.GLOBAL.PRICE_PRECISION : {
                     const.INFO.VALUE : self._price_precision,
                     const.INFO.DESCRIPTION : "precision for computing of trade-rate"
                 },
-                const.INFO.GLOBAL.VOLUME_PRECISION : {
-                    const.INFO.VALUE : self._volume_precision,
+                const.INFO.GLOBAL.QUANTITY_PRECISION : {
+                    const.INFO.VALUE : self._quantity_precision,
                     const.INFO.DESCRIPTION : "precision for computing of currency-volume"
                 },
                 const.INFO.GLOBAL.PROFIT : {
@@ -301,6 +355,10 @@ class Simple:
                 },
             },
             const.INFO.STEP : {
+                const.INFO.STEP.AVAILABLE_CURRENCY : {
+                    const.INFO.VALUE : self._available_currency,
+                    const.INFO.DESCRIPTION : "residual amount of available currency for buy-order"
+                },
                 const.INFO.STEP.DIFFERENCE_RATE : {
                     const.INFO.VALUE : self.GetDifferenceBetweenRate(),
                     const.INFO.DESCRIPTION : "the difference between last buy-rate and current sell-rate"
@@ -313,13 +371,17 @@ class Simple:
                     const.INFO.VALUE : self._init_cost,
                     const.INFO.DESCRIPTION : "total-buy-cost of currency in current step"
                 },
+                const.INFO.STEP.SELL_RATE_0 : {
+                    const.INFO.VALUE : self.ComputeSellRate(self._sell_quantity, self._init_cost * 1.0),
+                    const.INFO.DESCRIPTION : "currency-sell-rate need for realized 0%-profit of the trading-strategy"
+                },
                 const.INFO.STEP.SELL_RATE : {
                     const.INFO.VALUE : self._sell_rate,
                     const.INFO.DESCRIPTION : "currency-sell-rate need for realized actual profit of the trading-strategy"
                 },
-                const.INFO.STEP.SELL_RATE_0 : {
-                    const.INFO.VALUE : self.ComputeSellRate(self._sell_quantity, self._init_cost * 1.0),
-                    const.INFO.DESCRIPTION : "currency-sell-rate need for realized 0%-profit of the trading-strategy"
+                const.INFO.STEP.TOTAL_SELL_COST : {
+                    const.INFO.VALUE : self._sell_cost,
+                    const.INFO.DESCRIPTION : "total-sell-cost of currency in current step"
                 },
                 const.INFO.STEP.NEXT_BUY_RATE : {
                     const.INFO.VALUE : self._buy_rate,
@@ -345,16 +407,41 @@ class Simple:
     def RestoreFromFile(cls, filepath):
         restored_params = json.loads(faf.GetFileContent(filepath))
         restored_strategy = cls()
+        restored_strategy.SetAvailableCurrency(restored_params[const.INFO.STEP.AVAILABLE_CURRENCY])
         restored_strategy.SetPricePrecision1(restored_params[const.INFO.GLOBAL.PRICE_PRECISION])
-        restored_strategy.SetVolumePrecision1(restored_params[const.INFO.GLOBAL.VOLUME_PRECISION])
+        restored_strategy.SetQuantityPrecision1(restored_params[const.INFO.GLOBAL.QUANTITY_PRECISION])
         restored_strategy.SetCoefficient(restored_params[const.INFO.GLOBAL.COEFFICIENT])
-        restored_strategy.SetCommission(restored_params[const.INFO.GLOBAL.COMMISSION])
+        restored_strategy.SetCommissionBuy(restored_params[const.INFO.GLOBAL.BUY_COMMISSION])
+        restored_strategy.SetCommissionSell(restored_params[const.INFO.GLOBAL.SELL_COMMISSION])
         restored_strategy.SetProfit(restored_params[const.INFO.GLOBAL.PROFIT])
         restored_strategy.Init(restored_params[const.INFO.STEP.AVERAGE_RATE], restored_params[const.INFO.STEP.TOTAL_BUY_COST])
         return restored_strategy.ComputeToStep(restored_params[repr(const.INFO.STEP)])
 
     # brief: get strategy-ID
     # return: strategy-ID
-    @staticmethod
-    def GetID():
+    @classmethod
+    def GetID(cls):
         return const.ID.STAIRS_SIMPLE
+
+    # brief: round-up the number to predefined precision
+    # param: number - target number for round
+    # return: rounded number
+    @staticmethod
+    def _RoundUp(number, precision):
+        return float(_d(number).quantize(precision, decimal.ROUND_CEILING))
+
+    # brief: round-down the number to predefined precision
+    # param: number - target number for round
+    # return: rounded number
+    @staticmethod
+    def _RoundDown(number, precision):
+        return float(_d(number).quantize(precision, decimal.ROUND_FLOOR))
+
+    # brief: compute precision
+    # param: precision - new value of a precision (must be positive integer number)
+    @staticmethod
+    def _ComputePrecision(precision):
+        result = "1."
+        for _ in range(precision):
+            result+="0"
+        return _d(result)
