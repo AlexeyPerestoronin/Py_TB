@@ -51,7 +51,7 @@ class Test_Srairs:
             pass
         return
 
-    def test_Test(self):
+    def test_Strategy(self):
         with open("{}/{}".format(faf.SplitPath1(sys.argv[0]), self._log_file_name), "w") as file_writer:
             log.Logger.RegisterRecipient(self._log_file_name, file_writer.write, True)
             log.Logger.RegisterMethod(self._log_file_name, print, False)

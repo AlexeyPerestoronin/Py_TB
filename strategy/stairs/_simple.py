@@ -55,6 +55,41 @@ class Simple:
         self._QPU = None
         self._QPD = None
 
+    # brief: creates dictionary with recovery parameters by which is possible restore trade-strategy to current state
+    # return: recovery dictionary
+    def _CreateRecoveryParameters(self):
+        first_step = self.ComputeToStep(1)
+        recovery_params = {
+            repr(const.INFO.STEP) : self._step,
+            const.INFO.STEP.AVAILABLE_CURRENCY : first_step._available_currency,
+            const.INFO.GLOBAL.PRICE_PRECISION : str(first_step._price_precision).count('0'),
+            const.INFO.GLOBAL.QUANTITY_PRECISION : str(first_step._quantity_precision).count('0'),
+            const.INFO.GLOBAL.COEFFICIENT : first_step._coefficient,
+            const.INFO.GLOBAL.BUY_COMMISSION : first_step._buy_commission,
+            const.INFO.GLOBAL.SELL_COMMISSION : first_step._sell_commission,
+            const.INFO.GLOBAL.PROFIT : first_step._profit,
+            const.INFO.STEP.AVERAGE_RATE : first_step._init_rate,
+            const.INFO.STEP.TOTAL_BUY_COST : first_step._init_cost,
+        }
+        return recovery_params
+
+    # brief: restores trade-strategy state by recovery parameters
+    # note1: the recovery parameters must be creates by cls._CreateRecoveryParameters function
+    # param: recovery_params - target recovery parameters
+    # return: restored trade-strategy
+    @classmethod
+    def _RestoreFromRecoveryParameters(cls, recovery_params):
+        restored_strategy = cls()
+        restored_strategy.SetAvailableCurrency(recovery_params[const.INFO.STEP.AVAILABLE_CURRENCY])
+        restored_strategy.SetPricePrecision1(recovery_params[const.INFO.GLOBAL.PRICE_PRECISION])
+        restored_strategy.SetQuantityPrecision1(recovery_params[const.INFO.GLOBAL.QUANTITY_PRECISION])
+        restored_strategy.SetCoefficient(recovery_params[const.INFO.GLOBAL.COEFFICIENT])
+        restored_strategy.SetCommissionBuy(recovery_params[const.INFO.GLOBAL.BUY_COMMISSION])
+        restored_strategy.SetCommissionSell(recovery_params[const.INFO.GLOBAL.SELL_COMMISSION])
+        restored_strategy.SetProfit(recovery_params[const.INFO.GLOBAL.PROFIT])
+        restored_strategy.Init(recovery_params[const.INFO.STEP.AVERAGE_RATE], recovery_params[const.INFO.STEP.TOTAL_BUY_COST])
+        return restored_strategy.ComputeToStep(recovery_params[repr(const.INFO.STEP)])
+
     # collects statistic for all steps of trade-strategy
     def _CollectStatistic(self):
         if not self._previous_step:
@@ -284,24 +319,16 @@ class Simple:
     def ComputeSellRate(self, sell_quantity, sell_cost):
         return self._PPU((sell_cost / self._sell_commission) / sell_quantity)
 
+    # brief: gets string from which is possible restore trade-strategy to current state
+    # return: trade-strategy restore string
+    def CreateRecoveryString(self):
+        return json.dumps(self._CreateRecoveryParameters())
+
     # brief: saves trade-strategy in file
     # note1: current trade-step will be saved too
     # param: filepath - full path to save-file
     def SaveToFile(self, filepath):
-        first_step = self.ComputeToStep(1)
-        saved_params = {
-            repr(const.INFO.STEP) : self._step,
-            const.INFO.STEP.AVAILABLE_CURRENCY : first_step._available_currency,
-            const.INFO.GLOBAL.PRICE_PRECISION : str(first_step._price_precision).count('0'),
-            const.INFO.GLOBAL.QUANTITY_PRECISION : str(first_step._quantity_precision).count('0'),
-            const.INFO.GLOBAL.COEFFICIENT : first_step._coefficient,
-            const.INFO.GLOBAL.BUY_COMMISSION : first_step._buy_commission,
-            const.INFO.GLOBAL.SELL_COMMISSION : first_step._sell_commission,
-            const.INFO.GLOBAL.PROFIT : first_step._profit,
-            const.INFO.STEP.AVERAGE_RATE : first_step._init_rate,
-            const.INFO.STEP.TOTAL_BUY_COST : first_step._init_cost,
-        }
-        faf.SaveContentToFile1(filepath, json.dumps(saved_params, indent=4))
+        faf.SaveContentToFile1(filepath, json.dumps(self._CreateRecoveryParameters(), indent=4))
 
     # param: getted full information about current step of the trading-strategy
     # return: full information about trading-strategy
@@ -407,22 +434,19 @@ class Simple:
     def GetStep(self):
         return self._step
 
+    # brief: restore trade-strategy from recovery-string
+    # note1: saved trade-step will be restored too
+    # param: filepath - full path to restore-file
+    @classmethod
+    def RestoreFromRecoveryString(cls, recovery_string):
+        return cls._RestoreFromRecoveryParameters(json.loads(recovery_string))
+
     # brief: restore trade-strategy from file
     # note1: saved trade-step will be restored too
     # param: filepath - full path to restore-file
     @classmethod
     def RestoreFromFile(cls, filepath):
-        restored_params = json.loads(faf.GetFileContent(filepath))
-        restored_strategy = cls()
-        restored_strategy.SetAvailableCurrency(restored_params[const.INFO.STEP.AVAILABLE_CURRENCY])
-        restored_strategy.SetPricePrecision1(restored_params[const.INFO.GLOBAL.PRICE_PRECISION])
-        restored_strategy.SetQuantityPrecision1(restored_params[const.INFO.GLOBAL.QUANTITY_PRECISION])
-        restored_strategy.SetCoefficient(restored_params[const.INFO.GLOBAL.COEFFICIENT])
-        restored_strategy.SetCommissionBuy(restored_params[const.INFO.GLOBAL.BUY_COMMISSION])
-        restored_strategy.SetCommissionSell(restored_params[const.INFO.GLOBAL.SELL_COMMISSION])
-        restored_strategy.SetProfit(restored_params[const.INFO.GLOBAL.PROFIT])
-        restored_strategy.Init(restored_params[const.INFO.STEP.AVERAGE_RATE], restored_params[const.INFO.STEP.TOTAL_BUY_COST])
-        return restored_strategy.ComputeToStep(restored_params[repr(const.INFO.STEP)])
+        return cls._RestoreFromRecoveryParameters(json.loads(faf.GetFileContent(filepath)))
 
     # brief: get strategy-ID
     # return: strategy-ID
