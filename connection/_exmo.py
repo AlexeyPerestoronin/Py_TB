@@ -6,6 +6,7 @@ import urllib
 import hashlib
 import http.client
 
+import common
 import common.algorithms as alg
 from connection._timer import Wait
 
@@ -127,11 +128,11 @@ class Exmo(Wait):
 
     # brief: creates stop-buy-order for predefined buy-rate
     def CreateStopOrder_Buy(self, pair, buy_quantity, trigger_buy_rate):
-        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=buy_quantity, trigger_price=trigger_buy_rate)
+        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=buy_quantity, trigger_price=trigger_buy_rate)["parent_order_id"]
 
     # brief: creates stop-sell-order for predefined sell-rate
     def CreateStopOrder_Sell(self, pair, sell_quantity, trigger_sell_rate):
-        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=sell_quantity, trigger_price=trigger_sell_rate)
+        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=sell_quantity, trigger_price=trigger_sell_rate)["parent_order_id"]
 
     # brief: cancels the stop-trade-order by its id
     def CancelStopOrder(self, stop_order_id):
@@ -145,7 +146,12 @@ class Exmo(Wait):
     def IsOrderOpen(self, order_id):
         for pair_orders in self.GetUserOpenOrders().values():
             for order in pair_orders:
-                if int(order["order_id"]) == int(order_id):
+                id = None
+                try:
+                    id = int(order["order_id"])
+                except:
+                    id = int(order["parent_order_id"])
+                if id == int(order_id):
                     return True
         return False
 
@@ -154,7 +160,12 @@ class Exmo(Wait):
     # return: true - if the order is canceled; false - vise versa
     def IsOrderCancel(self, order_id):
         for order in self.GetUserCancelledOrders():
-            if int(order["order_id"]) == int(order_id):
+            id = None
+            try:
+                id = int(order["order_id"])
+            except:
+                id = int(order["parent_order_id"])
+            if id == int(order_id):
                 return True
         return False
 
@@ -164,7 +175,12 @@ class Exmo(Wait):
     def IsOrderComplete(self, pair, order_id):
         for pair_orders in self.GetUserDeals(pair).values():
             for order in pair_orders:
-                if int(order["order_id"]) == int(order_id):
+                id = None
+                try:
+                    id = int(order["order_id"])
+                except:
+                    id = int(order["parent_order_id"])
+                if id == int(order_id):
                     return True
         return False
 
