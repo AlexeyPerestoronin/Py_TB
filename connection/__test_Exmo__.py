@@ -17,6 +17,8 @@ class Test_Exmo(unittest.TestCase):
         self.__exmo = Exmo()
         self.__exmo.SetPublickKey(publick_key)
         self.__exmo.SetSecretKey(secret_key)
+        self.__exmo.SetTakerCommissionPromotion(0.3)
+        self.__exmo.SetMakerCommissionPromotion(0.5)
 
     @staticmethod
     def GetTrades():
@@ -36,10 +38,6 @@ class Test_Exmo(unittest.TestCase):
     def GetPairSettings():
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetPairSettings.log", json.dumps(Exmo.GetPairSettings(), indent=4))
 
-    @staticmethod
-    def GetCommissionForPair():
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetCommissionForPair-BTC_USD.log", json.dumps(Exmo.GetCommissionForPair("BTC_USD"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetCommissionForPair-BTC_USDT.log", json.dumps(Exmo.GetCommissionForPair("BTC_USDT"), indent=4))
 
     @staticmethod
     def GetCurrencyList():
@@ -47,6 +45,10 @@ class Test_Exmo(unittest.TestCase):
 
     def GetUserInfo(self):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserInfo.log", json.dumps(self.__exmo.GetUserInfo(), indent=4))
+
+    def GetCommissionForPair(self):
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetTakerCommission-BTC_USD.log", json.dumps(self.__exmo.GetTakerCommission("BTC_USD"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetMakerCommission-BTC_USD.log", json.dumps(self.__exmo.GetMakerCommission("BTC_USD"), indent=4))
 
     def GetUserBalance(self):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserBalance-RUB.log", json.dumps(self.__exmo.GetUserBalance("RUB"), indent=4))
@@ -89,7 +91,7 @@ class Test_Exmo(unittest.TestCase):
         # self.GetOrderBook()
         # self.GetTicker()
         # self.GetPairSettings()
-        # self.GetCommissionForPair()
+        self.GetCommissionForPair()
         # self.GetCurrencyList()
         # self.GetUserInfo()
         # self.GetUserBalance()
@@ -99,7 +101,7 @@ class Test_Exmo(unittest.TestCase):
         # self.GetOrderDeals()
         # self.CreateOrder_Buy_Check_Cancel()
         # self.CreateOrder_BuyTotal_Check_Cancel()
-        self.ComputeUserBalanceIn()
+        # self.ComputeUserBalanceIn()
         pass
 
 if __name__ == "__main__":

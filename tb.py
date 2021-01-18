@@ -12,9 +12,12 @@ def ReadSettings():
     return json.loads(faf.GetFileContent("settings.json"))
 
 def CreateExchangeConnector(settings):
+
     connector = c.Exmo()
     connector.SetPublickKey(faf.GetFileContent(settings["public_key"]))
     connector.SetSecretKey(bytes(faf.GetFileContent(settings["secret_key"]), encoding="utf-8"))
+    connector.SetTakerCommissionPromotion(settings["taker_commission_promotion"])
+    connector.SetMakerCommissionPromotion(settings["maker_commission_promotion"])
     return connector
 
 def CreateTraders(settings, connector):
@@ -23,7 +26,7 @@ def CreateTraders(settings, connector):
         strategy = s.DefineStrategy(trading_setting["strategy"]["ID"])
         strategy.SetProfit(trading_setting["strategy"]["profit"])
         strategy.SetCoefficient(trading_setting["strategy"]["coefficient"])
-        strategy.SetVolumePrecision1(trading_setting["strategy"]["volume_precision"])
+        strategy.SetAvailableCurrency(trading_setting["strategy"]["available_currency"])
         trader = t.Simple(connector, strategy)
         trader.SetPair(trading_setting["pair"])
         trader.SetInitCost(trading_setting["init_cost"])
@@ -37,8 +40,6 @@ def main():
     settings = ReadSettings()
     connector = CreateExchangeConnector(settings)
     traders = CreateTraders(settings, connector)
-    for trader in traders:
-        trader.Start()
     waiter = c.Wait(15)
     while True:
         for trader in traders:

@@ -23,10 +23,11 @@ class SimpleStump(unittest.TestCase, Simple):
 
     def setUp(self):
         self._strategy = ss.Simple()
-        self._strategy.SetCommission(1.0)
+        self._strategy.SetCommissionBuy(1.0)
+        self._strategy.SetCommissionSell(1.0)
         self._strategy.SetCoefficient(2)
         self._strategy.SetPricePrecision1(6)
-        self._strategy.SetVolumePrecision1(8)
+        self._strategy.SetQuantityPrecision1(8)
         self._strategy.SetProfit(1.1)
         self._strategy.Init(1000, 100)
         self._strategy = self._strategy.ComputeToStep(3)
@@ -60,7 +61,7 @@ class Test_Simple1(unittest.TestCase, Keys):
         strategy = ss.Simple()
         strategy.SetProfit(1.01)
         strategy.SetCoefficient(2)
-        strategy.SetVolumePrecision1(8)
+        strategy.SetQuantityPrecision1(8)
         self._trader = Simple(connection, strategy)
 
     def test_Trading1(self):
@@ -80,7 +81,7 @@ class Test_Simple2(unittest.TestCase, Keys):
         strategy = ss.Dependency()
         strategy.SetProfit(1.01)
         strategy.SetCoefficient(2)
-        strategy.SetVolumePrecision1(8)
+        strategy.SetQuantityPrecision1(8)
         self._trader = Simple(connection, strategy)
 
     def test_Trading1(self):

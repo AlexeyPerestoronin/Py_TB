@@ -143,9 +143,9 @@ class Exmo(Wait):
     # param: order_id - target trade-order id
     # return: true - if the order is open; false - vise versa
     def IsOrderOpen(self, order_id):
-        for orders in self.GetUserOpenOrders().values():
-            for order in orders:
-                if int(order["order_id"]) == order_id:
+        for pair_orders in self.GetUserOpenOrders().values():
+            for order in pair_orders:
+                if int(order["order_id"]) == int(order_id):
                     return True
         return False
 
@@ -153,19 +153,18 @@ class Exmo(Wait):
     # param: order_id - target trade-order id
     # return: true - if the order is canceled; false - vise versa
     def IsOrderCancel(self, order_id):
-        for orders in self.GetUserCancelledOrders():
-            for order in orders:
-                if int(order["order_id"]) == order_id:
-                    return True
+        for order in self.GetUserCancelledOrders():
+            if int(order["order_id"]) == int(order_id):
+                return True
         return False
 
     # brief: checks is order complete by its id
     # param: order_id - target trade-order id
     # return: true - if the order is completed; false - vise versa
     def IsOrderComplete(self, pair, order_id):
-        for orders in self.GetUserDeals(pair).values():
-            for order in orders:
-                if int(order["order_id"]) == order_id:
+        for pair_orders in self.GetUserDeals(pair).values():
+            for order in pair_orders:
+                if int(order["order_id"]) == int(order_id):
                     return True
         return False
 
@@ -273,35 +272,42 @@ class Exmo(Wait):
         return 1 - float(Exmo.GetPairSettings()[pair]["commission_maker_percent"]) * self._maker_commission_promotion / 100
 
     # brief: gets list of the deals in currency pair
-    @staticmethod
-    def GetTrades(pair):
-        return Exmo.Query("trades", pair=pair)
+    @classmethod
+    def GetTrades(cls, pair):
+        return cls.Query("trades", pair=pair)
 
     # brief: gets the book of current orders on the currency pair
-    @staticmethod
-    def GetOrderBook(pair, limit=100):
-        return Exmo.Query("order_book", pair=pair, limit=limit)
+    @classmethod
+    def GetOrderBook(cls, pair, limit=100):
+        return cls.Query("order_book", pair=pair, limit=limit)
 
     # brief: gets statistics on prices and volume of trades by currency pairs
-    @staticmethod
-    def GetTicker():
-        return Exmo.Query("ticker")
+    @classmethod
+    def GetTicker(cls):
+        return cls.Query("ticker")
 
     # brief: gets currency pair setting
-    @staticmethod
-    def GetPairSettings():
-        return Exmo.Query("pair_settings")
+    @classmethod
+    def GetPairSettings(cls):
+        return cls.Query("pair_settings")
 
     # brief: gets avaliable list of currency
-    @staticmethod
-    def GetCurrencyList():
-        return Exmo.Query("currency")
+    @classmethod
+    def GetCurrencyList(cls):
+        return cls.Query("currency")
 
     # brief: gets precision for computing trade-rate for the trade-pair
     # return: precision for trade-pair
-    @staticmethod
-    def GetPrecisionForPair(pair):
-        return int(Exmo.GetPairSettings()[pair]["price_precision"])
+    @classmethod
+    def GetPricePrecisionForPair(cls, pair):
+        return int(cls.GetPairSettings()[pair]["price_precision"])
+
+    # brief: gets precision for computing trade-rate for the trade-pair
+    # return: precision for trade-pair
+    @classmethod
+    def GetQuantityPrecisionForPair(cls, pair):
+        # in Exmo-exchange quantity precision for all trade-pair is 8
+        return int(8)
 
     # NOTE: for detailed information about structure of code in below see https://github.com/exmo-dev/exmo_api_lib/blob/master/rest/python/exmo3.py
 
@@ -311,8 +317,8 @@ class Exmo(Wait):
     # param: secret_key - the private-key of the target user
     # param: params - params for the specifing of the method
     # return: json-string with response on the requested method
-    @staticmethod
-    def Query(api_method, publick_key="STUMP", secret_key=bytes("STUMP", encoding="utf-8"), **params):
+    @classmethod
+    def Query(cls, api_method, publick_key="STUMP", secret_key=bytes("STUMP", encoding="utf-8"), **params):
         def ComputeHash(data):
             """ computes hash-value from target https-request """
             hash = hmac.new(key=secret_key, digestmod=hashlib.sha512)
@@ -329,8 +335,8 @@ class Exmo(Wait):
             # signed data for request
             "Sign": ComputeHash(params) # подписанные данные
         }
-        conn = http.client.HTTPSConnection(Exmo.url)
-        conn.request("POST", "/" + Exmo.api_version + "/" + api_method, params, headers)
+        conn = http.client.HTTPSConnection(cls.url)
+        conn.request("POST", "/" + cls.api_version + "/" + api_method, params, headers)
         response = conn.getresponse().read()
         conn.close()
         result = json.loads(response.decode('utf-8'))
