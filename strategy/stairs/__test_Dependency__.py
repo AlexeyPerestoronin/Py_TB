@@ -76,15 +76,15 @@ class Test4_StairsDependency(unittest.TestCase, Test_Srairs):
 
 class Test5_StairsDependency(unittest.TestCase, Test_Srairs):
     def setUp(self):
-        Test_Srairs.__init__(self, Dependency(), "StairsDependency-USDT_RUB.log")
-        self._stairs.SetAvailableCurrency(1000000)
-        self._stairs.SetCommissionBuy(0.998)
-        self._stairs.SetCommissionSell(0.9994)
+        Test_Srairs.__init__(self, Dependency(), "StairsDependency-ETH_RUB.log")
+        self._stairs.SetAvailableCurrency(95000)
+        self._stairs.SetCommissionBuy(0.996)
+        self._stairs.SetCommissionSell(0.996)
         self._stairs.SetCoefficient(2)
-        self._stairs.SetPricePrecision1(3)
+        self._stairs.SetPricePrecision1(4)
         self._stairs.SetQuantityPrecision1(8)
-        self._stairs.SetProfit(1.01)
-        self._stairs.Init(70.00, 500)
+        self._stairs.SetProfit(1.001)
+        self._stairs.Init(87573.67, 499.99924164)
 
 if __name__ == "__main__":
     unittest.main()

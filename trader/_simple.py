@@ -11,6 +11,7 @@ import common.log as log
 import trader.db as db
 import trader.const.errors as error
 
+import strategy
 import strategy.stairs as ss
 import strategy.const as s_const
 import strategy.const.errors as s_error
@@ -35,58 +36,7 @@ class Simple:
 
     # brief: saves preview of trading-strategy that is realizing now
     def _SaveTradingPreview(self):
-        # if faf.IsFileExist1(self._log_preview):
-        #     return
-        copy_strategy = self._strategy.ComputeToStep(1)
-        with open(self._log_preview, "w") as preview_writer:
-            log.Logger.RegisterRecipient(self._log_preview, preview_writer.write, True)
-            PreviewLogger = lambda init_message: log.Logger(init_message, recipient=self._log_preview)
-            with PreviewLogger(["Global info:", copy_strategy.GetStep()]) as logger:
-                key = s_const.INFO.GLOBAL
-                info_global = copy_strategy.GetInfo()[key]
-                logger.LogInfo("buy-commission = {}", info_global[key.BUY_COMMISSION])
-                logger.LogInfo("sell-commission = {}", info_global[key.SELL_COMMISSION])
-                logger.LogInfo("price precision = {}", info_global[key.PRICE_PRECISION])
-                logger.LogInfo("volume precision = {}", info_global[key.QUANTITY_PRECISION])
-                logger.LogInfo("profit = {}", info_global[key.PROFIT])
-                logger.LogMessage("###")
-                logger.LogInfo("initial_cost = {}", self._init_cost)
-                logger.LogInfo("pair = {}", self._pair)
-            is_next_step_save = True
-            while is_next_step_save:
-                with PreviewLogger(["Step {}:", copy_strategy.GetStep()]) as logger:
-                    info = copy_strategy.GetInfo()
-                    with PreviewLogger([]) as _:
-                        key = s_const.INFO.GLOBAL
-                        i_global = info[key]
-                        with PreviewLogger("Volume:") as sub_sub_logger:
-                            subkey = key.VOLUME
-                            i_global_volume = i_global[subkey]
-                            sub_sub_logger.LogResult("total = {}", i_global_volume[subkey.TOTAL_CLEAN])
-                            sub_sub_logger.LogResult("real = {}", i_global_volume[subkey.TOTAL_REAL])
-                            sub_sub_logger.LogResult("lost = {}", i_global_volume[subkey.TOTAL_LOST])
-                        with PreviewLogger("Cost:") as sub_sub_logger:
-                            subkey = key.COST
-                            i_global_cost = i_global[subkey]
-                            sub_sub_logger.LogResult("total = {}", i_global_cost[subkey.TOTAL_CLEAN])
-                            sub_sub_logger.LogResult("real = {}", i_global_cost[subkey.TOTAL_REAL])
-                            sub_sub_logger.LogResult("lost = {}", i_global_cost[subkey.TOTAL_LOST])
-                    with PreviewLogger([]) as sub_logger:
-                        key = s_const.INFO.STEP
-                        i_step = info[key]
-                        sub_logger.LogInfo("difference rate = {}", i_step[key.DIFFERENCE_RATE])
-                        sub_logger.LogInfo("average price = {}", i_step[key.AVERAGE_RATE])
-                        sub_logger.LogInfo("total buy cost = {}", i_step[key.TOTAL_BUY_COST])
-                        sub_logger.LogInfo("sell rate for current ptofit = {}", i_step[key.SELL_RATE])
-                        sub_logger.LogInfo("total sell cost = {}", i_step[key.TOTAL_SELL_COST])
-                        sub_logger.LogInfo("minimum sell rate = {}", i_step[key.SELL_RATE_0])
-                        sub_logger.LogInfo("next buy rate = {}", i_step[key.NEXT_BUY_RATE])
-                        sub_logger.LogInfo("next buy cost = {}", i_step[key.NEXT_BUY_COST])
-                try:
-                    copy_strategy = copy_strategy.ComputeNextStep()
-                except s_error.ExceededAvailableCurrency:
-                    is_next_step_save = False
-            log.Logger.UnregisterRecipient(self._log_preview)
+        strategy.StrategyPreview(self._strategy).SavePreviewInFile(self._log_preview)
 
     # brief: sets sell and buy orders for current step of trade-strategy
     def _SetOrders(self):
@@ -95,8 +45,7 @@ class Simple:
 
     # brief: initializes new trading
     def _InitNewTrading(self):
-        current_buy_rate = self._connection.GetCurrentBuyRate(self._pair)
-        self._db.InitNewTrading(self._connection.CreateOrder_BuyTotal(self._pair, self._init_cost, current_buy_rate))
+        self._db.InitNewTrading(self._connection.CreateOrder_BuyMarketTotal(self._pair, self._init_cost))
 
     # brief: initializes trading
     def _InitTrading(self):
