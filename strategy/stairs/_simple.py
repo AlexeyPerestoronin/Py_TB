@@ -13,12 +13,16 @@ _d = decimal.Decimal
 # brief: implements simple strairs trade-strategy
 class Simple:
     def __init__(self):
+        # flags(s)
+        self._is_initialized = False
         # global(s)
         self._price_precision = None
         self._quantity_precision = None
-        self._coefficient = None
+        self._step_coefficient = None
+        self._init_coefficient = None
         self._profit = None
-        self._available_currency = None
+        self._total_available_currency = None
+        self._current_available_currency = None
         # init(s)
         self._init_rate = None
         self._init_cost = None
@@ -34,6 +38,7 @@ class Simple:
         self._buy_commission = None
         # steps(s)
         self._step = None
+        self._first_step = None
         self._next_step = None
         self._previous_step = None
         # statistic(s)
@@ -58,18 +63,17 @@ class Simple:
     # brief: creates dictionary with recovery parameters by which is possible restore trade-strategy to current state
     # return: recovery dictionary
     def _CreateRecoveryParameters(self):
-        first_step = self.ComputeToStep(1)
         recovery_params = {
             repr(const.INFO.STEP) : self._step,
-            const.INFO.STEP.AVAILABLE_CURRENCY : first_step._available_currency,
-            const.INFO.GLOBAL.PRICE_PRECISION : str(first_step._price_precision).count('0'),
-            const.INFO.GLOBAL.QUANTITY_PRECISION : str(first_step._quantity_precision).count('0'),
-            const.INFO.GLOBAL.COEFFICIENT : first_step._coefficient,
-            const.INFO.GLOBAL.BUY_COMMISSION : first_step._buy_commission,
-            const.INFO.GLOBAL.SELL_COMMISSION : first_step._sell_commission,
-            const.INFO.GLOBAL.PROFIT : first_step._profit,
-            const.INFO.STEP.AVERAGE_RATE : first_step._init_rate,
-            const.INFO.STEP.TOTAL_BUY_COST : first_step._init_cost,
+            const.INFO.STEP.AVAILABLE_CURRENCY : self._first_step._total_available_currency,
+            const.INFO.GLOBAL.PRICE_PRECISION : str(self._first_step._price_precision).count('0'),
+            const.INFO.GLOBAL.QUANTITY_PRECISION : str(self._first_step._quantity_precision).count('0'),
+            const.INFO.GLOBAL.COEFFICIENT : self._first_step._init_coefficient,
+            const.INFO.GLOBAL.BUY_COMMISSION : self._first_step._buy_commission,
+            const.INFO.GLOBAL.SELL_COMMISSION : self._first_step._sell_commission,
+            const.INFO.GLOBAL.PROFIT : self._first_step._profit,
+            const.INFO.STEP.AVERAGE_RATE : self._first_step._init_rate,
+            const.INFO.STEP.TOTAL_BUY_COST : self._first_step._init_cost,
         }
         return recovery_params
 
@@ -122,15 +126,15 @@ class Simple:
             self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_cost
             self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] += lost_cost
 
-    # brief: gets next coefficient
-    # return: next coefficient
-    def _GetNextCoefficient(self):
-        return self._coefficient
-
     # brief: gets sell-rate for next-step
     # return: the sell-rate for next-step
     def _GetNextSellRate(self):
         return self._init_rate
+
+    # brief: compute next coefficient for buy-cost
+    # return: next coefficient
+    def _ComputeNextCoefficient(self):
+        self._step_coefficient = self._init_coefficient
 
     # brief: compute sell-cost for current strategy-step to sell-action
     def _ComputeSellCost(self):
@@ -146,14 +150,18 @@ class Simple:
 
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
-        self._buy_cost = self._init_cost * self._GetNextCoefficient()
+        self._buy_cost = self._init_cost * self._step_coefficient
 
     # brief: compute buy-rate for current strategy-step to buy-action
     def _ComputeBuyRate(self):
         sell_rate = self._GetNextSellRate()
-        self._available_currency -= self._buy_cost
-        if self._available_currency < 0.:
-            raise error.ExceededAvailableCurrency()
+        self._current_available_currency -= self._buy_cost
+        if self._current_available_currency < 0.:
+            raising_error = error.ExceededAvailableCurrency()
+            raising_error.SetSellQuantity(self._sell_quantity)
+            raising_error.SetSellCost(self._sell_cost)
+            raising_error.SetSellRate(self._sell_rate)
+            raise raising_error
         sell_cost = self._init_cost + self._buy_cost
         self._buy_rate = self._PPD(- (self._buy_cost * self._buy_commission) / (self._sell_quantity - ((self._profit * sell_cost) / (sell_rate * self._sell_commission))))
         if self._buy_rate <= 0.:
@@ -166,6 +174,8 @@ class Simple:
     # brief: compute current strategy-step
     def _ComputeCurrentStep(self):
         self._CollectStatistic()
+        # (ceff) sequence of calculations
+        self._ComputeNextCoefficient()
         # (sell) sequence of calculations
         self._ComputeSellQuantity()
         self._ComputeSellRate()
@@ -178,7 +188,7 @@ class Simple:
     # brief: set the coefficient of each next cost increaseble
     # param: coefficient - new each next cost increaseble
     def SetCoefficient(self, coefficient):
-        self._coefficient = coefficient
+        self._init_coefficient = coefficient
 
     # brief: set a trade-commission for buy-order
     # param: buy_commission - new value of a trade-commission for buy-order
@@ -198,7 +208,7 @@ class Simple:
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._available_currency = available_currency
+        self._current_available_currency = available_currency
 
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision (must be positive integer number)
@@ -236,10 +246,18 @@ class Simple:
             self._step = self._previous_step._step + 1
             self._statistic = copy.deepcopy(self._previous_step._statistic)
         else:
-            self._available_currency -= self._init_cost
-            if self._available_currency < 0.:
+            self._first_step = self
+            self._total_available_currency = self._current_available_currency
+            self._current_available_currency -= self._init_cost
+            if self._current_available_currency < 0.:
                 raise error.ExceededAvailableCurrency()
         self._ComputeCurrentStep()
+        self._is_initialized = True
+
+    # brief: check is strategy initialized
+    # return: true - if is initialized; false - vise versa
+    def IsInitialized(self):
+        return self._is_initialized
 
     # brief: gets sell-cost for current step
     # return: the sell-cost for current step
@@ -277,30 +295,31 @@ class Simple:
         self._next_step = type(self)()
         self._next_step._previous_step = self
         # migrate settings(1)
-        self._next_step.SetAvailableCurrency(self._available_currency)
+        self._next_step.SetAvailableCurrency(self._current_available_currency)
         self._next_step.SetQuantityPrecision2(self._quantity_precision)
         self._next_step.SetPricePrecision2(self._price_precision)
         self._next_step.SetCommissionSell(self._sell_commission)
         self._next_step.SetCommissionBuy(self._buy_commission)
-        self._next_step.SetCoefficient(self._coefficient)
+        self._next_step.SetCoefficient(self._init_coefficient)
         self._next_step.SetProfit(self._profit)
         # compute cost and rate for next step (as if it is cost and rate for first step)
         cost = self._init_cost + self._buy_cost
         rate = (math.pow(self._buy_commission, 2) * self._GetNextSellRate()) / self._profit
+        self._next_step._first_step = self._first_step
         self._next_step.Init(rate, cost)
         return self._next_step
 
     # brief: goes to the target-step in current trade-strategy
-    # param: step - target trade-step
+    # param: to_step - target trade-step
     # return: the trade strategy in target trade-step state
-    def ComputeToStep(self, step):
-        copy_strategy = copy.deepcopy(self)
-        while step != copy_strategy._step:
-            if copy_strategy._step < step:
+    def ComputeToStep(self, to_step):
+        if self._first_step:
+            copy_strategy = copy.deepcopy(self._first_step)
+            for _ in range(1, to_step):
                 copy_strategy = copy_strategy.ComputeNextStep()
-            else:
-                copy_strategy = copy_strategy._previous_step
-        return copy_strategy
+            return copy_strategy
+        else:
+            raise error.NotInitializedStrategy()
 
     # brief: gets difference of rate between last buy-rate and current sell-rate
     # return: the difference of rate between last buy-rate and current sell-rate
@@ -335,6 +354,10 @@ class Simple:
     def GetInfo(self):
         info = {
             const.INFO.GLOBAL : {
+                const.INFO.GLOBAL.TOTAL_AVAILABLE_CURRENCY : {
+                    const.INFO.VALUE : self._first_step._total_available_currency,
+                    const.INFO.DESCRIPTION : "total availbale currency for the trade-strategy"
+                },
                 const.INFO.GLOBAL.BUY_COMMISSION : {
                     const.INFO.VALUE : self._buy_commission,
                     const.INFO.DESCRIPTION : "commission for buy transactions imposed by the trading-exchange"
@@ -356,8 +379,8 @@ class Simple:
                     const.INFO.DESCRIPTION : "profit realized by the trading-strategy"
                 },
                 const.INFO.GLOBAL.COEFFICIENT : {
-                    const.INFO.VALUE : self._coefficient,
-                    const.INFO.DESCRIPTION : "increase-cost-coefficient for each next step of the trading-strategy"
+                    const.INFO.VALUE : self._init_coefficient,
+                    const.INFO.DESCRIPTION : "initial increase-cost-coefficient"
                 },
                 const.INFO.GLOBAL.VOLUME : {
                     const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN : {
@@ -390,7 +413,7 @@ class Simple:
             },
             const.INFO.STEP : {
                 const.INFO.STEP.AVAILABLE_CURRENCY : {
-                    const.INFO.VALUE : self._available_currency,
+                    const.INFO.VALUE : self._current_available_currency,
                     const.INFO.DESCRIPTION : "residual amount of available currency for buy-order"
                 },
                 const.INFO.STEP.DIFFERENCE_RATE : {
@@ -406,24 +429,28 @@ class Simple:
                     const.INFO.DESCRIPTION : "total-buy-cost of currency in current step"
                 },
                 const.INFO.STEP.SELL_RATE_0 : {
-                    const.INFO.VALUE : self.ComputeSellRate(self._sell_quantity, self._init_cost * 1.0),
-                    const.INFO.DESCRIPTION : "currency-sell-rate need for realized 0%-profit of the trading-strategy"
+                    const.INFO.VALUE : self.ComputeSellRate(self._sell_quantity, self._init_cost),
+                    const.INFO.DESCRIPTION : "currency-rate for sell-order of the current step for zero-loss"
                 },
                 const.INFO.STEP.SELL_RATE : {
                     const.INFO.VALUE : self._sell_rate,
-                    const.INFO.DESCRIPTION : "currency-sell-rate need for realized actual profit of the trading-strategy"
+                    const.INFO.DESCRIPTION : "currency-rate for sell-order of the current step"
                 },
                 const.INFO.STEP.TOTAL_SELL_COST : {
                     const.INFO.VALUE : self._sell_cost,
                     const.INFO.DESCRIPTION : "total-sell-cost of currency in current step"
                 },
-                const.INFO.STEP.NEXT_BUY_RATE : {
-                    const.INFO.VALUE : self._buy_rate,
-                    const.INFO.DESCRIPTION : "maximum currency buy-rate need for going to next step of the current trading-strategy"
+                const.INFO.STEP.COEFFICIENT : {
+                    const.INFO.VALUE : self._step_coefficient,
+                    const.INFO.DESCRIPTION : "increase-cost-coefficient for buy-order of the current step"
                 },
-                const.INFO.STEP.NEXT_BUY_COST : {
+                const.INFO.STEP.BUY_COST : {
                     const.INFO.VALUE : self._buy_cost,
-                    const.INFO.DESCRIPTION : "cost of currency for next buy-step of the current trading-strategy"
+                    const.INFO.DESCRIPTION : "cost of currency for buy-order of the current step"
+                },
+                const.INFO.STEP.BUY_RATE : {
+                    const.INFO.VALUE : self._buy_rate,
+                    const.INFO.DESCRIPTION : "currency-rate for buy-order of the current step"
                 },
             },
         }

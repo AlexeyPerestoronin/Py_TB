@@ -21,10 +21,12 @@ class StrategyPreview:
             key = s_const.INFO.GLOBAL
             logger.LogMessage("strategy-class is {}", repr(type(self._strategy)))
             info_global = self._strategy.GetInfo()[key]
+            logger.LogInfo("total available currency = {}", info_global[key.TOTAL_AVAILABLE_CURRENCY])
             logger.LogInfo("buy-commission = {}", info_global[key.BUY_COMMISSION])
             logger.LogInfo("sell-commission = {}", info_global[key.SELL_COMMISSION])
             logger.LogInfo("price precision = {}", info_global[key.PRICE_PRECISION])
             logger.LogInfo("volume precision = {}", info_global[key.QUANTITY_PRECISION])
+            logger.LogInfo("increase-cost-coefficient = {}", info_global[key.COEFFICIENT])
             logger.LogInfo("profit = {}", info_global[key.PROFIT])
         is_next_step_save = True
         while is_next_step_save:
@@ -48,22 +50,29 @@ class StrategyPreview:
                 with PreviewLogger([]) as sub_logger:
                     key = s_const.INFO.STEP
                     i_step = info[key]
-                    sub_logger.LogInfo("difference rate = {}", i_step[key.DIFFERENCE_RATE])
-                    sub_logger.LogInfo("average price = {}", i_step[key.AVERAGE_RATE])
                     sub_logger.LogInfo("total buy cost = {}", i_step[key.TOTAL_BUY_COST])
-                    sub_logger.LogInfo("sell rate for current ptofit = {}", i_step[key.SELL_RATE])
-                    sub_logger.LogInfo("total sell cost = {}", i_step[key.TOTAL_SELL_COST])
-                    sub_logger.LogInfo("minimum sell rate = {}", i_step[key.SELL_RATE_0])
-                    sub_logger.LogInfo("next buy rate = {}", i_step[key.NEXT_BUY_RATE])
-                    sub_logger.LogInfo("next buy cost = {}", i_step[key.NEXT_BUY_COST])
+                    sub_logger.LogInfo("available currency = {}", i_step[key.AVAILABLE_CURRENCY])
+                    sub_logger.LogInfo("difference rate = {}", i_step[key.DIFFERENCE_RATE])
+                    sub_logger.LogInfo("average rate = {}", i_step[key.AVERAGE_RATE])
+                    sub_logger.LogInfo("sell rate (0%-profit) = {}", i_step[key.SELL_RATE_0])
+                    sub_logger.LogInfo("sell cost = {}", i_step[key.TOTAL_SELL_COST])
+                    sub_logger.LogInfo("sell rate = {}", i_step[key.SELL_RATE])
+                    sub_logger.LogInfo("buy ceff = {}", i_step[key.COEFFICIENT])
+                    sub_logger.LogInfo("buy cost = {}", i_step[key.BUY_COST])
+                    sub_logger.LogInfo("buy rate = {}", i_step[key.BUY_RATE])
             try:
                 self._strategy = self._strategy.ComputeNextStep()
-            except s_error.ExceededAvailableCurrency:
+            except s_error.ExceededAvailableCurrency as eac_error:
+                with PreviewLogger(["Waiting-values for trade-strategy:", self._strategy.GetStep()]) as logger:
+                    logger.LogResult("sell-quantity = {}", eac_error.GetSellQuantity())
+                    logger.LogResult("sell-cost = {}", eac_error.GetSellCost())
+                    logger.LogResult("sell-rate = {}", eac_error.GetSellRate())
                 is_next_step_save = False
         log.Logger.UnregisterRecipient(repr(self))
 
     def GetPreview(self):
-        if isinstance(self._strategy, ss.Simple) or isinstance(self._strategy, ss.Dependency) or isinstance(self._strategy, ss.Progressive):
+        II = lambda data_type : isinstance(self._strategy, data_type)
+        if II(ss.Simple) or II(ss.Dependency) or II(ss.ProgressiveS) or II(ss.ProgressiveD) or II(ss.FixedBuyCostS) or II(ss.FixedBuyCostD):
             self._StairsStrategyPreview()
         else:
             raise s_error.UndefinedStrategy()
