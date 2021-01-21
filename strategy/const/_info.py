@@ -2,10 +2,11 @@ class INFO:
     VALUE = "value"
     DESCRIPTION = "description"
     class GLOBAL:
+        TOTAL_AVAILABLE_CURRENCY = "total_available_currency"
         BUY_COMMISSION = "buy_commission"
         SELL_COMMISSION = "sell_commission"
         PROFIT = "profit"
-        COEFFICIENT = "coefficient"
+        COEFFICIENT = "init_coefficient"
         PRICE_PRECISION = "price_precision"
         QUANTITY_PRECISION = "quantity_precision"
         class VOLUME:
@@ -17,6 +18,7 @@ class INFO:
             TOTAL_REAL = "total_real"
             TOTAL_LOST = "total_lost"
     class STEP:
+        COEFFICIENT = "step_coefficient"
         AVAILABLE_CURRENCY = "available_currency"
         DIFFERENCE_RATE = "difference_rate"
         AVERAGE_RATE = "average_rate"
@@ -24,5 +26,5 @@ class INFO:
         SELL_RATE_0 = "sell_rate_0"
         SELL_RATE = "sell_rate"
         TOTAL_SELL_COST = "total_sell_cost"
-        NEXT_BUY_RATE = "next_buy_rate"
-        NEXT_BUY_COST = "next_buy_cost"
+        BUY_RATE = "next_buy_rate"
+        BUY_COST = "next_buy_cost"

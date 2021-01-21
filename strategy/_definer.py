@@ -8,9 +8,15 @@ import strategy.const.errors as error
 def DefineStrategy(id):
     if id == const.ID.STAIRS_SIMPLE:
         return ss.Simple()
+    elif id == const.ID.STAIRS_PROGRESSIVE_S:
+        return ss.ProgressiveS()
+    elif id == const.ID.FIXED_BUY_COST_S:
+        return ss.FixedBuyCostS()
     elif id == const.ID.STAIRS_DEPENDENT:
         return ss.Dependency()
-    elif id == const.ID.STAIRS_PROGRESSIVE:
-        return ss.Progressive()
+    elif id == const.ID.STAIRS_PROGRESSIVE_D:
+        return ss.ProgressiveD()
+    elif id == const.ID.FIXED_BUY_COST_D:
+        return ss.FixedBuyCostD()
     else:
         raise error.UndefinedStrategyID()

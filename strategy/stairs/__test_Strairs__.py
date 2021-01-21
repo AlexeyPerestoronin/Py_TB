@@ -18,4 +18,5 @@ class Test_Srairs:
         self._strategy_logger = None
 
     def test_Strategy(self):
-        strategy.StrategyPreview(self._stairs).SavePreviewInFile(self._log_file_name)
+        if self._stairs.IsInitialized():
+            strategy.StrategyPreview(self._stairs).SavePreviewInFile(self._log_file_name)

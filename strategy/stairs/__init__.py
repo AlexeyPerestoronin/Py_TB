@@ -1,5 +1,10 @@
 # Module description: a module implements different type of stairs-trade-strategies
 
 from strategy.stairs._simple import *
+from strategy.stairs._fixed_buy_cost_s import *
+from strategy.stairs._progressive_s import *
+
 from strategy.stairs._dependent import *
-from strategy.stairs._progressive import *
+from strategy.stairs._fixed_buy_cost_d import *
+from strategy.stairs._progressive_d import *
+

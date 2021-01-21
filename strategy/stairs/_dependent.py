@@ -19,9 +19,9 @@ class Dependency(Simple):
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
         if self._previous_step:
-            self._buy_cost = self._previous_step._buy_cost * self._GetNextCoefficient()
+            self._buy_cost = self._previous_step._buy_cost * self._step_coefficient
         else:
-            self._buy_cost = self._init_cost * self._GetNextCoefficient()
+            self._buy_cost = self._init_cost * self._step_coefficient
 
     # brief: get strategy-ID
     # return: strategy-ID
