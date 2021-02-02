@@ -29,6 +29,7 @@ class Simple:
         # sell(s)
         self._sell_cost = None
         self._sell_rate = None
+        self._sell_profit = None
         self._sell_quantity = None
         self._sell_commission = None
         # buy(s)
@@ -139,6 +140,10 @@ class Simple:
     # brief: compute sell-cost for current strategy-step to sell-action
     def _ComputeSellCost(self):
         self._sell_cost = self._PPD(self._sell_quantity * self._sell_rate)
+    
+    # brief: compute sell-profit for current strategy-step to sell-action
+    def _ComputeSellProfit(self):
+        self._sell_profit = self._sell_cost - self._init_cost
 
     # brief: compute sell-rate for current strategy-step to sell-action
     def _ComputeSellRate(self):
@@ -180,6 +185,7 @@ class Simple:
         self._ComputeSellQuantity()
         self._ComputeSellRate()
         self._ComputeSellCost()
+        self._ComputeSellProfit()
         # (buy) sequence of calculations
         self._ComputeBuyCost()
         self._ComputeBuyRate()
@@ -289,8 +295,8 @@ class Simple:
     def GetBuyQuantity(self):
         return self._buy_quantity
 
-    # brief: compute next trade-step based of current trade-step
-    # return: next trade-step
+    # brief: compute the next-step regarding current trade-strategy
+    # return: deep copy of the current trade-strategy presented on the next-step
     def ComputeNextStep(self):
         self._next_step = type(self)()
         self._next_step._previous_step = self
@@ -309,9 +315,9 @@ class Simple:
         self._next_step.Init(rate, cost)
         return self._next_step
 
-    # brief: goes to the target-step in current trade-strategy
+    # brief: compute the specified-step regarding current trade-strategy
     # param: to_step - target trade-step
-    # return: the trade strategy in target trade-step state
+    # return: deep copy of the current trade-strategy presented on the specified-step
     def ComputeToStep(self, to_step):
         if self._first_step:
             copy_strategy = copy.deepcopy(self._first_step)
@@ -440,6 +446,10 @@ class Simple:
                     const.INFO.VALUE : self._sell_cost,
                     const.INFO.DESCRIPTION : "total-sell-cost of currency in current step"
                 },
+                const.INFO.STEP.TOTAL_SELL_PROFIT : {
+                    const.INFO.VALUE : self._sell_profit,
+                    const.INFO.DESCRIPTION : "total-sell-profit of currency in current step"
+                },
                 const.INFO.STEP.COEFFICIENT : {
                     const.INFO.VALUE : self._step_coefficient,
                     const.INFO.DESCRIPTION : "increase-cost-coefficient for buy-order of the current step"
@@ -460,6 +470,11 @@ class Simple:
     # return: current trade-strategy step
     def GetStep(self):
         return self._step
+
+    # brief: gets sell-profit for current trade-strategy step
+    # return: current sell-profit
+    def GetStepProfit(self):
+        return self._sell_profit
 
     # brief: restore trade-strategy from recovery-string
     # note1: saved trade-step will be restored too

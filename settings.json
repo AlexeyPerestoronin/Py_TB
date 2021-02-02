@@ -1,27 +1,25 @@
 {
     "public_key" : "Alexey_Perestoronin.public.key",
     "secret_key" : "Alexey_Perestoronin.secret.key",
+    "taker_commission_promotion" : 1,
+    "maker_commission_promotion" : 1,
     "tradings" : [
         {
+            "id" : "3",
             "pair" : "ETH_USDT",
-            "init_cost" : 10,
-            "save_catalog" : "SC-ETH_USDT",
+            "init_cost" : 100,
+            "db_filename" : "st.sqlite",
+            "save_catalog" : ".trading",
+            "completed_policy" : {
+                "id" : "FIXED_COMPLETED_STRATEGY",
+                "params" : 10
+            },
             "strategy" : {
-                "ID" : "0000-0002",
-                "profit" : 1.001,
+                "id" : "FIXED_BUY_COST_S",
+                "profit" : 1.003,
                 "coefficient" : 1.5,
-                "volume_precision" : 8
-            }
-        },
-        {
-            "pair" : "ETH_RUB",
-            "init_cost" : 700,
-            "save_catalog" : "SC-ETH_RUB",
-            "strategy" : {
-                "ID" : "0000-0002",
-                "profit" : 1.002,
-                "coefficient" : 1.8,
-                "volume_precision" : 8
+                "quantity_precision" : 8,
+                "available_currency" : 1350
             }
         }
     ]

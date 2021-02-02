@@ -7,90 +7,53 @@ import unittest
 
 sys.path.insert(0, os.getcwd())
 
-from trader import Simple
-
+import trader
 import connection as con
 import common.faf as faf
 import strategy.stairs as ss
 
-class Keys:
-    def __init__(self):
-        self._publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.public\.key$"))[0])
-        self._secret_key = bytes(faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.secret\.key$"))[0]), encoding="utf-8")
+PARAMS_1 = {
+    "id" : "test trading",
+    "pair" : "ETH_RUB",
+    "init_cost" : 100,
+    "db_filename" : "test.sqlite",
+    "save_catalog" : ".trading",
+    "completed_policy" : {
+        "id" : "FIXED_COMPLETED_STRATEGY",
+        "params" : 1
+    },
+    "strategy" : {
+        "id" : "FIXED_BUY_COST_S",
+        "profit" : 1.01,
+        "coefficient" : 1.5,
+        "quantity_precision" : 8,
+        "available_currency" : 1300
+    }
+}
 
-class SimpleStump(unittest.TestCase, Simple):
-    save_catalog_test = os.path.join(faf.SplitPath1(sys.argv[0]), "test")
-
+class TestTrader(unittest.TestCase, trader.Simple):
     def setUp(self):
-        self._strategy = ss.Simple()
-        self._strategy.SetCommissionBuy(1.0)
-        self._strategy.SetCommissionSell(1.0)
-        self._strategy.SetCoefficient(2)
-        self._strategy.SetPricePrecision1(6)
+        trader.Simple.__init__(self)
+        self.SetParameters(PARAMS_1)
+        self.Init()
+
+    @classmethod
+    def tearDownClass(cls):
+        faf.DeleteFile1(os.path.join(PARAMS_1["save_catalog"], PARAMS_1["db_filename"]))
+
+class Test1(TestTrader):
+    def test1(self):
+        self._db.SetInitOrder(self._db.CreateId())
         self._strategy.SetQuantityPrecision1(8)
-        self._strategy.SetProfit(1.1)
-        self._strategy.Init(1000, 100)
-        self._strategy = self._strategy.ComputeToStep(3)
-        self._sell_order_id = 101
-        self._buy_order_id = 202
+        self._strategy.SetPricePrecision1(4)
+        self._strategy.SetCommissionSell(1.0)
+        self._strategy.SetCommissionBuy(1.0)
+        self._strategy.Init(1400, 100)
+        self._db.SetSellOrder(self._db.CreateId())
+        self._db.SetBuyOrder(self._db.CreateId())
 
-    def test_Save_Restore(self):
-        strategy_before = self._strategy
-        sell_order_id_before = self._sell_order_id
-        buy_order_id_before = self._buy_order_id
-        self.SetSaveCatalog(self.save_catalog_test)
-        self._Save()
-        self._Restore()
-        self.assertTrue(sell_order_id_before, self._sell_order_id)
-        self.assertTrue(buy_order_id_before, self._buy_order_id)
-        self.assertTrue(strategy_before.GetID(), self._strategy.GetID())
-        self.assertTrue(strategy_before.GetStep(), self._strategy.GetStep())
-        self.assertTrue(strategy_before.GetSellRate(), self._strategy.GetSellRate())
-        self.assertTrue(strategy_before.GetBuyRate(), self._strategy.GetBuyRate())
-        self.assertTrue(strategy_before.GetInfo(), self._strategy.GetInfo())
-
-    def tearDown(self):
-        shutil.rmtree(self.Finish())
-
-class Test_Simple1(unittest.TestCase, Keys):
-    def setUp(self):
-        Keys.__init__(self)
-        connection = con.Exmo()
-        connection.SetPublickKey(self._publick_key)
-        connection.SetSecretKey(self._secret_key)
-        strategy = ss.Simple()
-        strategy.SetProfit(1.01)
-        strategy.SetCoefficient(2)
-        strategy.SetQuantityPrecision1(8)
-        self._trader = Simple(connection, strategy)
-
-    def test_Trading1(self):
-        save_catalog = os.path.join(faf.SplitPath1(sys.argv[0]), "SC-USDT_RUB")
-        self._trader.SetInitCost(500)
-        self._trader.SetPair("USDT_RUB")
-        self._trader.SetSaveCatalog(save_catalog)
-        # self._trader.Start()
-        # self._trader.Iterate()
-
-class Test_Simple2(unittest.TestCase, Keys):
-    def setUp(self):
-        Keys.__init__(self)
-        connection = con.Exmo()
-        connection.SetPublickKey(self._publick_key)
-        connection.SetSecretKey(self._secret_key)
-        strategy = ss.Dependency()
-        strategy.SetProfit(1.01)
-        strategy.SetCoefficient(2)
-        strategy.SetQuantityPrecision1(8)
-        self._trader = Simple(connection, strategy)
-
-    def test_Trading1(self):
-        save_catalog = os.path.join(faf.SplitPath1(sys.argv[0]), "SC-BTC_USDT")
-        self._trader.SetInitCost(10)
-        self._trader.SetPair("BTC_USDT")
-        self._trader.SetSaveCatalog(save_catalog)
-        # self._trader.Start()
-        # self._trader.Iterate()
+    def test2(self):
+        self._strategy = type(self._strategy).RestoreFromRecoveryString(self._db.GetStrategyRecovery())
 
 if __name__ == "__main__":
     unittest.main()

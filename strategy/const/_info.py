@@ -26,5 +26,6 @@ class INFO:
         SELL_RATE_0 = "sell_rate_0"
         SELL_RATE = "sell_rate"
         TOTAL_SELL_COST = "total_sell_cost"
+        TOTAL_SELL_PROFIT = "total_sell_profit"
         BUY_RATE = "next_buy_rate"
         BUY_COST = "next_buy_cost"

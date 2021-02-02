@@ -56,6 +56,7 @@ class StrategyPreview:
                     sub_logger.LogInfo("average rate = {}", i_step[key.AVERAGE_RATE])
                     sub_logger.LogInfo("sell rate (0%-profit) = {}", i_step[key.SELL_RATE_0])
                     sub_logger.LogInfo("sell cost = {}", i_step[key.TOTAL_SELL_COST])
+                    sub_logger.LogInfo("sell profit = {}", i_step[key.TOTAL_SELL_PROFIT])
                     sub_logger.LogInfo("sell rate = {}", i_step[key.SELL_RATE])
                     sub_logger.LogInfo("buy ceff = {}", i_step[key.COEFFICIENT])
                     sub_logger.LogInfo("buy cost = {}", i_step[key.BUY_COST])
