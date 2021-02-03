@@ -37,15 +37,19 @@ class Simple:
         self._db_filename = None
 
     def _CheckStrategyClass(self):
-        if isinstance(self._strategy, ss.Dependency):
+        if isinstance(self._strategy, ss.FixedBuyCostS):
             return
-        elif isinstance(self._strategy, ss.FixedBuyCostS):
+        elif isinstance(self._strategy, ss.SoftCostIncreaseS):
+            return
+        elif isinstance(self._strategy, ss.SoftCostIncreaseD):
             return
         elif isinstance(self._strategy, ss.FixedBuyCostD):
             return
         elif isinstance(self._strategy, ss.ProgressiveS):
             return
         elif isinstance(self._strategy, ss.ProgressiveD):
+            return
+        elif isinstance(self._strategy, ss.Dependency):
             return
         elif isinstance(self._strategy, ss.Simple):
             return
@@ -142,8 +146,7 @@ class Simple:
         if self._connection.IsOrderCancel(initial_order_id):
             self._FinishTrading()
         elif self._connection.IsOrderComplete(self._pair, initial_order_id):
-            if self._strategy.IsInitialized():
-                self._strategy = self._strategy.ComputeToStep(1)
+            self._PreinitStrategy()
             self._strategy.SetQuantityPrecision1(self._connection.GetQuantityPrecisionForPair(self._pair))
             self._strategy.SetPricePrecision1(self._connection.GetPricePrecisionForPair(self._pair))
             self._strategy.SetCommissionSell(self._connection.GetTakerCommission(self._pair))

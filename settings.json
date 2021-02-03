@@ -5,17 +5,17 @@
     "maker_commission_promotion" : 1,
     "tradings" : [
         {
-            "id" : "3",
+            "id" : "1-SoftCostIncrease",
             "pair" : "ETH_USDT",
             "init_cost" : 100,
             "db_filename" : "st.sqlite",
             "save_catalog" : ".trading",
             "completed_policy" : {
                 "id" : "FIXED_COMPLETED_STRATEGY",
-                "params" : 10
+                "params" : 100
             },
             "strategy" : {
-                "id" : "FIXED_BUY_COST_S",
+                "id" : "SOFT_COST_INCREASE_D",
                 "profit" : 1.003,
                 "coefficient" : 1.5,
                 "quantity_precision" : 8,
