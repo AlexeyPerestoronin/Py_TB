@@ -22,5 +22,7 @@ def DefineStrategy(id):
         return ss.SoftCostIncreaseS()
     elif id == const.ID.SOFT_COST_INCREASE_D:
         return ss.SoftCostIncreaseD()
+    elif id == const.ID.SOFT_COST_INCREASE_DS:
+        return ss.SoftCostIncreaseDS()
     else:
         raise error.UndefinedStrategyID()

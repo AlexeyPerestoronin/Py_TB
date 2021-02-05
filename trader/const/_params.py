@@ -18,3 +18,4 @@ class Params:
             COEFFICIENT = "coefficient"
             QUANTITY_PRECISION = "quantity_precision"
             AVAILABLE_CURRENCY = "available_currency"
+            DIFF_SUBCOST = "diff_subcost"

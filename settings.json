@@ -5,7 +5,7 @@
     "maker_commission_promotion" : 1,
     "tradings" : [
         {
-            "id" : "1-SoftCostIncrease",
+            "id" : "1-SoftCostIncreaseDS",
             "pair" : "ETH_USDT",
             "init_cost" : 100,
             "db_filename" : "st.sqlite",
@@ -19,7 +19,8 @@
                 "profit" : 1.003,
                 "coefficient" : 1.5,
                 "quantity_precision" : 8,
-                "available_currency" : 1350
+                "available_currency" : 1400,
+                "diff_subcost" : 50
             }
         }
     ]

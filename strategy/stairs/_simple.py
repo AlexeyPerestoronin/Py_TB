@@ -280,6 +280,11 @@ class Simple:
     def GetSellQuantity(self):
         return self._sell_quantity
 
+    # brief: gets profit for sell-order for current step
+    # return: the profit for sell-order for current step
+    def GetSellProfit(self):
+        return self._sell_profit
+
     # brief: gets buy-cost for current step
     # return: the buy-cost for current step
     def GetBuyCost(self):
@@ -294,6 +299,16 @@ class Simple:
     # return: the buy-quantity for current step
     def GetBuyQuantity(self):
         return self._buy_quantity
+
+    # brief: gets total-buy-cost of currency in current-step
+    # return: total-buy-cost in current-step
+    def GetTotalBuyCost(self):
+        return self._init_cost
+
+    # brief: gets total-everage-buy-rate of currency in current-step
+    # return: total-everage-buy-rate in current-step
+    def GetTotalEverageBuyRate(self):
+        return self._init_rate
 
     # brief: compute the next-step regarding current trade-strategy
     # return: deep copy of the current trade-strategy presented on the next-step
@@ -427,11 +442,11 @@ class Simple:
                     const.INFO.DESCRIPTION : "the difference between last buy-rate and current sell-rate"
                 },
                 const.INFO.STEP.AVERAGE_RATE : {
-                    const.INFO.VALUE : self._init_rate,
-                    const.INFO.DESCRIPTION : "total-everage-price is buy-rate of currency on total-cost at the in current step"
+                    const.INFO.VALUE : self.GetTotalEverageBuyRate(),
+                    const.INFO.DESCRIPTION : "total-everage-buy-rate is buy-rate of currency on total-cost at the in current step"
                 },
                 const.INFO.STEP.TOTAL_BUY_COST : {
-                    const.INFO.VALUE : self._init_cost,
+                    const.INFO.VALUE : self.GetTotalBuyCost(),
                     const.INFO.DESCRIPTION : "total-buy-cost of currency in current step"
                 },
                 const.INFO.STEP.SELL_RATE_0 : {

@@ -43,6 +43,8 @@ class Simple:
             return
         elif isinstance(self._strategy, ss.SoftCostIncreaseD):
             return
+        elif isinstance(self._strategy, ss.SoftCostIncreaseDS):
+            return
         elif isinstance(self._strategy, ss.FixedBuyCostD):
             return
         elif isinstance(self._strategy, ss.ProgressiveS):
@@ -100,6 +102,8 @@ class Simple:
                 self._strategy.SetQuantityPrecision1(self._strategy_params[key])
             elif key == s_key.AVAILABLE_CURRENCY:
                 self._strategy.SetAvailableCurrency(self._strategy_params[key])
+            elif key == s_key.DIFF_SUBCOST:
+                self._strategy.SetSubstepsDiffCost(self._strategy_params[key])
             elif key == s_key.ID:
                 continue
             else:
