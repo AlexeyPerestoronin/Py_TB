@@ -11,12 +11,11 @@ import common.algorithms as alg
 from connection._timer import Wait
 
 # brief: implements logic for interaction with Exmo-exchange
-class Exmo(Wait):
+class Exmo():
     url = "api.exmo.com"
     api_version = "v1.1"
 
     def __init__(self):
-        Wait.__init__(self, 0.5) # Exmo-exchange allow to send get/post-requests two time in second
         # promotion(s)
         self._taker_commission_promotion = None
         self._maker_commission_promotion = None
@@ -29,7 +28,6 @@ class Exmo(Wait):
     # param: params - params for the specifing of the method
     # return: json-string with response on the requested method
     def _QueryPrivate(self, api_method, **params):
-        self.Waiting()
         return Exmo.Query(api_method, self._publick_key, self._secret_key, **params)
 
     # brief: sets the publick-key for current connection
@@ -335,6 +333,7 @@ class Exmo(Wait):
     # return: json-string with response on the requested method
     @classmethod
     def Query(cls, api_method, publick_key="STUMP", secret_key=bytes("STUMP", encoding="utf-8"), **params):
+        Wait.WaitingGlobal(0.5)
         def ComputeHash(data):
             """ computes hash-value from target https-request """
             hash = hmac.new(key=secret_key, digestmod=hashlib.sha512)
