@@ -352,6 +352,8 @@ class Exmo():
         }
         conn = http.client.HTTPSConnection(cls.url)
         conn.request("POST", "/" + cls.api_version + "/" + api_method, params, headers)
+            # Exception has occurred: TimeoutError
+            # [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
         response = conn.getresponse().read()
         conn.close()
         result = json.loads(response.decode('utf-8'))
