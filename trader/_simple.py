@@ -136,7 +136,7 @@ class Simple:
 
     def _WaitTrading(self):
         sell_order_id = self._db.GetSellOrder()
-        if self._connection.IsOrderCancel(sell_order_id) or self._connection.IsOrderComplete(self._params, sell_order_id):
+        if self._connection.IsOrderCancel(sell_order_id) or self._connection.IsOrderComplete(self._pair, sell_order_id):
             self._db.CancelSellOrder()
             self._FinishTrading()
 
