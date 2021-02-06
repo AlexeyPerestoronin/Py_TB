@@ -2,23 +2,24 @@ import os
 import re
 import sys
 import json
+import decimal
 import unittest
 
 sys.path.insert(0, os.getcwd())
 
 import common
 import common.faf as faf
+import connection.const.errors as c_errors
 from connection import Exmo
-
 class Test_Exmo(unittest.TestCase):
     def setUp(self):
         publick_key = faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.public\.key$"))[0])
         secret_key = bytes(faf.GetFileContent(faf.SearchAllFilesFromRoot2(os.getcwd(), re.compile(r"^.+?\.secret\.key$"))[0]), encoding="utf-8")
-        self.__exmo = Exmo()
-        self.__exmo.SetPublickKey(publick_key)
-        self.__exmo.SetSecretKey(secret_key)
-        self.__exmo.SetTakerCommissionPromotion(0.3)
-        self.__exmo.SetMakerCommissionPromotion(0.5)
+        self._exmo = Exmo()
+        self._exmo.SetPublickKey(publick_key)
+        self._exmo.SetSecretKey(secret_key)
+        self._exmo.SetTakerCommissionPromotion(0.3)
+        self._exmo.SetMakerCommissionPromotion(0.5)
 
     @staticmethod
     def GetTrades():
@@ -44,54 +45,53 @@ class Test_Exmo(unittest.TestCase):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetCurrencyList.log", json.dumps(Exmo.GetCurrencyList(), indent=4))
 
     def GetUserInfo(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserInfo.log", json.dumps(self.__exmo.GetUserInfo(), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserInfo.log", json.dumps(self._exmo.GetUserInfo(), indent=4))
 
     def GetCommissionForPair(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetTakerCommission-BTC_USD.log", json.dumps(self.__exmo.GetTakerCommission("BTC_USD"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetMakerCommission-BTC_USD.log", json.dumps(self.__exmo.GetMakerCommission("BTC_USD"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetTakerCommission-BTC_USD.log", json.dumps(self._exmo.GetTakerCommission("BTC_USD"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetMakerCommission-BTC_USD.log", json.dumps(self._exmo.GetMakerCommission("BTC_USD"), indent=4))
 
     def GetUserBalance(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserBalance-RUB.log", json.dumps(self.__exmo.GetUserBalance("RUB"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserBalance-USDT.log", json.dumps(self.__exmo.GetUserBalance("USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserBalance-RUB.log", json.dumps(self._exmo.GetUserBalance("RUB"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserBalance-USDT.log", json.dumps(self._exmo.GetUserBalance("USDT"), indent=4))
 
     def GetUserOpenOrders(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserOpenOrders.log", json.dumps(self.__exmo.GetUserOpenOrders(), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserOpenOrders.log", json.dumps(self._exmo.GetUserOpenOrders(), indent=4))
 
     def GetUserCancelledOrders(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserCancelledOrders.log", json.dumps(self.__exmo.GetUserCancelledOrders(), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserCancelledOrders.log", json.dumps(self._exmo.GetUserCancelledOrders(), indent=4))
 
     def GetUserDeals(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-USDT_RUB.log", json.dumps(self.__exmo.GetUserDeals("USDT_RUB"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-BTC_USDT.log", json.dumps(self.__exmo.GetUserDeals("BTC_USDT"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-ETH_USDT.log", json.dumps(self.__exmo.GetUserDeals("ETH_USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-USDT_RUB.log", json.dumps(self._exmo.GetUserDeals("USDT_RUB"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-BTC_USDT.log", json.dumps(self._exmo.GetUserDeals("BTC_USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-ETH_USDT.log", json.dumps(self._exmo.GetUserDeals("ETH_USDT"), indent=4))
 
     def GetOrderDeals(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetOrderDeals-sell-order.log", json.dumps(self.__exmo.GetOrderDeals("11589112646"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetOrderDeals-buy-order.log", json.dumps(self.__exmo.GetOrderDeals("11606216514"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetOrderDeals-buy-match.log", json.dumps(self.__exmo.GetOrderDeals("11654835769"), indent=4))
+        self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, "44333222111")
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetOrderDeals.log", json.dumps(self._exmo.GetOrderDeals("12591381569"), indent=4))
 
-    def CreateOrder_Buy_Check_Cancel(self):
-        order_id = self.__exmo.CreateOrder_Buy("USDT_RUB", 1, 50)
-        self.assertTrue(self.__exmo.IsOrderOpen(order_id))
-        self.__exmo.CancelOrder(order_id)
-        self.assertFalse(self.__exmo.IsOrderOpen(order_id))
-
-    def CreateOrder_BuyTotal_Check_Cancel(self):
-        order_id = self.__exmo.CreateOrder_BuyTotal("USDT_RUB", 100, 50)
-        self.assertTrue(self.__exmo.IsOrderOpen(order_id))
-        self.__exmo.CancelOrder(order_id)
-        self.assertFalse(self.__exmo.IsOrderOpen(order_id))
+    def CreateOrder(self):
+        pair = "ETH_USDT"
+        current_buy_rate = self._exmo.GetCurrentBuyRate(pair)
+        current_buy_rate /= 2
+        current_buy_rate = float(decimal.Decimal(current_buy_rate).quantize(decimal.Decimal("1.00"), decimal.ROUND_CEILING))
+        order_id = self._exmo.CreateOrder_BuyTotal(pair, 50, current_buy_rate)
+        self.assertTrue(self._exmo.IsOrderOpen(order_id))
+        self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, order_id)
+        self._exmo.CancelOrder(order_id)
+        self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, order_id)
+        self.assertFalse(self._exmo.IsOrderOpen(order_id))
 
     def ComputeUserBalanceIn(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "ComputeUserBalanceIn-USDT.log", json.dumps(self.__exmo.ComputeUserBalanceIn("USDT"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "ComputeUserBalanceIn-RUB.log", json.dumps(self.__exmo.ComputeUserBalanceIn("RUB"), indent=4))
+        print(self._exmo.ComputeUserBalanceIn("USDT"))
+        print(self._exmo.ComputeUserBalanceIn("RUB"))
 
     def test_PerformTest(self):
         # self.GetTrades()
         # self.GetOrderBook()
         # self.GetTicker()
         # self.GetPairSettings()
-        self.GetCommissionForPair()
+        # self.GetCommissionForPair()
         # self.GetCurrencyList()
         # self.GetUserInfo()
         # self.GetUserBalance()
@@ -99,8 +99,7 @@ class Test_Exmo(unittest.TestCase):
         # self.GetUserCancelledOrders()
         # self.GetUserDeals()
         # self.GetOrderDeals()
-        # self.CreateOrder_Buy_Check_Cancel()
-        # self.CreateOrder_BuyTotal_Check_Cancel()
+        # self.CreateOrder()
         # self.ComputeUserBalanceIn()
         pass
 

@@ -8,7 +8,9 @@ import http.client
 
 import common
 import common.algorithms as alg
-from connection._timer import Wait
+
+import connection
+import connection.const.errors as c_errors
 
 # brief: implements logic for interaction with Exmo-exchange
 class Exmo():
@@ -26,9 +28,15 @@ class Exmo():
     # brief: performs https-get/post requests to private-API of Exmo-exchange
     # param: api_method - the requested method
     # param: params - params for the specifing of the method
-    # return: json-string with response on the requested method
+    # return: json-string with response from requested method
     def _QueryPrivate(self, api_method, **params):
-        return Exmo.Query(api_method, self._publick_key, self._secret_key, **params)
+        return self.Query(api_method, self._publick_key, self._secret_key, **params)
+
+    # brief: creates trade-order
+    # param: order_parameters - parameters for created order
+    # return: json-string with response from "order_create"-method
+    def _CreateOrder(self, **order_parameters):
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "order_create", **order_parameters))
 
     # brief: sets the publick-key for current connection
     # param: publick_key - target publick-key
@@ -58,83 +66,79 @@ class Exmo():
 
     # brief: gets information about user's account
     def GetUserInfo(self):
-        return self._QueryPrivate("user_info")
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "user_info"))
 
     def GetUserBalance(self, currency):
         return float(self.GetUserInfo()["balances"][currency])
 
     # brief: gets the list of user's open (active) orders
     def GetUserOpenOrders(self):
-        return self._QueryPrivate("user_open_orders")
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "user_open_orders"))
 
     # brief: gets the list of user's candelled orders
     def GetUserCancelledOrders(self, limit=100, offset=0):
-        return self._QueryPrivate("user_cancelled_orders", limit=limit, offset=offset)
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "user_cancelled_orders", limit=limit, offset=offset))
 
     # brief: gets the list of user's deals
     def GetUserDeals(self, pair, limit=100, offset=0):
-        return self._QueryPrivate("user_trades", pair=pair, limit=limit, offset=offset)
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "user_trades", pair=pair, limit=limit, offset=offset))
 
     # brief: gets the list of trade's deals
     def GetOrderDeals(self, order_id):
-        return self._QueryPrivate("order_trades", order_id=order_id)
+        last_error = None
+        for _ in range(10):
+            try:
+                return self._QueryPrivate("order_trades", order_id=order_id)
+            except c_errors.OrderIsNotFoundByID as error:
+                raise error
+            except c_errors.QueryError as error:
+                last_error = error
+        raise last_error
 
     # brief: creates an buy-order
     def CreateOrder_Buy(self, pair, buy_quantity, buy_rate):
-        return self._QueryPrivate("order_create", type="buy", pair=pair, quantity=buy_quantity, price=buy_rate)["order_id"]
+        return self._CreateOrder(type="buy", pair=pair, quantity=buy_quantity, price=buy_rate)["order_id"]
 
     # brief: creates an buy-order at predefined total-cost
     def CreateOrder_BuyTotal(self, pair, total_cost, buy_rate):
         buy_quantity = total_cost / buy_rate
-        return self._QueryPrivate("order_create", type="buy", pair=pair, quantity=buy_quantity, price=buy_rate)["order_id"]
+        return self._CreateOrder(type="buy", pair=pair, quantity=buy_quantity, price=buy_rate)["order_id"]
 
     # brief: creates an buy-order at current market buy-rate
     def CreateOrder_BuyMarket(self, pair, buy_quantity):
-        return self._QueryPrivate("order_create", type="market_buy", pair=pair, quantity=buy_quantity, price=0)["order_id"]
+        return self._CreateOrder(type="market_buy", pair=pair, quantity=buy_quantity, price=0)["order_id"]
 
     # brief: creates an buy-order at current market buy-rate and predefined total-cost
     def CreateOrder_BuyMarketTotal(self, pair, total_cost):
-        return self._QueryPrivate("order_create", type="market_buy_total", pair=pair, quantity=total_cost, price=0)["order_id"]
+        return self._CreateOrder(type="market_buy_total", pair=pair, quantity=total_cost, price=0)["order_id"]
 
     # brief: creates an sell-order
     def CreateOrder_Sell(self, pair, sell_quantity, sell_rate):
-        return self._QueryPrivate("order_create", type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
+        return self._CreateOrder(type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
 
     # brief: creates an sell-order for selling all target currency
     # note1: if pair is "BTC_USD" the target currency is "BTC"
     def CreateOrder_SellAll(self, pair, sell_rate):
         sell_quantity = self.GetUserBalance(Exmo._1FromPair(pair))
-        return self._QueryPrivate("order_create", type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
+        return self._CreateOrder(type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
 
     # brief: creates an sell-order for selling all target currency that is more saved quantity
     # note1: if pair is "BTC_USD" the target currency is "BTC"
     def CreateOrder_SellSaved(self, pair, saved_quantity, sell_rate):
         sell_quantity = self.GetUserBalance(Exmo._1FromPair(pair)) - saved_quantity
-        return self._QueryPrivate("order_create", type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
+        return self._CreateOrder(type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
 
     # brief: creates an sell-order at current market sell-rate
     def CreateOrder_SellMarket(self, pair, quantity):
-        return self._QueryPrivate("order_create", type="market_sell", pair=pair, quantity=quantity, price=0)["order_id"]
+        return self._CreateOrder(type="market_sell", pair=pair, quantity=quantity, price=0)["order_id"]
 
     # brief: creates an sell-order at current market sell-rate and predefined total-cost
     def CreateOrder_SellMarketTotal(self, pair, total_cost):
-        return self._QueryPrivate("order_create", type="market_sell_total", pair=pair, quantity=total_cost, price=0)["order_id"]
+        return self._CreateOrder(type="market_sell_total", pair=pair, quantity=total_cost, price=0)["order_id"]
 
     # brief: cancels the trade-order by its id
     def CancelOrder(self, order_id):
-        return self._QueryPrivate("order_cancel", order_id=order_id)
-
-    # brief: creates stop-buy-order for predefined buy-rate
-    def CreateStopOrder_Buy(self, pair, buy_quantity, trigger_buy_rate):
-        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=buy_quantity, trigger_price=trigger_buy_rate)["parent_order_id"]
-
-    # brief: creates stop-sell-order for predefined sell-rate
-    def CreateStopOrder_Sell(self, pair, sell_quantity, trigger_sell_rate):
-        return self._QueryPrivate("stop_market_order_create", type="buy", pair=pair, quantity=sell_quantity, trigger_price=trigger_sell_rate)["parent_order_id"]
-
-    # brief: cancels the stop-trade-order by its id
-    def CancelStopOrder(self, stop_order_id):
-        return self._QueryPrivate("stop_market_order_cancel", parent_order_id=stop_order_id)
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "order_cancel", order_id=order_id))
 
     # NOTE: next below class-methods are based on upper methods
 
@@ -288,27 +292,27 @@ class Exmo():
     # brief: gets list of the deals in currency pair
     @classmethod
     def GetTrades(cls, pair):
-        return cls.Query("trades", pair=pair)
+        return common.ExecuteOrRepeat(common.Lambda(cls.Query, "trades", pair=pair))
 
     # brief: gets the book of current orders on the currency pair
     @classmethod
     def GetOrderBook(cls, pair, limit=100):
-        return cls.Query("order_book", pair=pair, limit=limit)
+        return common.ExecuteOrRepeat(common.Lambda(cls.Query, "order_book", pair=pair, limit=limit))
 
     # brief: gets statistics on prices and volume of trades by currency pairs
     @classmethod
     def GetTicker(cls):
-        return cls.Query("ticker")
+        return common.ExecuteOrRepeat(common.Lambda(cls.Query, "ticker"))
 
     # brief: gets currency pair setting
     @classmethod
     def GetPairSettings(cls):
-        return cls.Query("pair_settings")
+        return common.ExecuteOrRepeat(common.Lambda(cls.Query, "pair_settings"))
 
     # brief: gets avaliable list of currency
     @classmethod
     def GetCurrencyList(cls):
-        return cls.Query("currency")
+        return common.ExecuteOrRepeat(common.Lambda(cls.Query, "currency"))
 
     # brief: gets precision for computing trade-rate for the trade-pair
     # return: precision for trade-pair
@@ -333,7 +337,7 @@ class Exmo():
     # return: json-string with response on the requested method
     @classmethod
     def Query(cls, api_method, publick_key="STUMP", secret_key=bytes("STUMP", encoding="utf-8"), **params):
-        Wait.WaitingGlobal(0.5)
+        connection.Wait.WaitingGlobal(1)
         def ComputeHash(data):
             """ computes hash-value from target https-request """
             hash = hmac.new(key=secret_key, digestmod=hashlib.sha512)
@@ -351,14 +355,21 @@ class Exmo():
             "Sign": ComputeHash(params) # подписанные данные
         }
         conn = http.client.HTTPSConnection(cls.url)
-        conn.request("POST", "/" + cls.api_version + "/" + api_method, params, headers)
-            # Exception has occurred: TimeoutError
-            # [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+        common.ExecuteOrRepeat(common.Lambda(conn.request, "POST", "/" + cls.api_version + "/" + api_method, params, headers))
         response = conn.getresponse().read()
         conn.close()
         result = json.loads(response.decode('utf-8'))
         if "error" in result and result["error"]:
-            raise result["error"]
+            error_message = result["error"]
+            error = None
+            if "Error 50304" in error_message:
+                error = c_errors.OrderIsNotFoundByID()
+            elif "Error 50052" in error_message:
+                error = c_errors.InsufficientFundsForOrder()
+            else:
+                error = c_errors.QueryError()
+                error.SetDescription(error_message)
+            raise error
         return result
 
     # brief: gets first currency from currency-pair
@@ -373,7 +384,7 @@ class Exmo():
     def _2FromPair(pair):
         return pair.split('_')[1]
 
-    # brief: creates currency-pair from two currencyes
+    # brief: creates currency-pair from two currencies
     # pram:
     @staticmethod
     def _ToPair(currency_1, currency_2):
