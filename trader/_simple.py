@@ -108,6 +108,10 @@ class Simple:
                 continue
             else:
                 raise error.UndefinedInitStrategyParameter()
+        self._strategy.SetQuantityPrecision1(self._connection.GetQuantityPrecisionForPair(self._pair))
+        self._strategy.SetPricePrecision1(self._connection.GetPricePrecisionForPair(self._pair))
+        self._strategy.SetCommissionSell(self._connection.GetTakerCommission(self._pair))
+        self._strategy.SetCommissionBuy(self._connection.GetTakerCommission(self._pair))
 
     def _InitDB(self):
         self._db.RegGetStrategyRecoverystring(self._GetStrategyRecoverystring)
@@ -151,10 +155,6 @@ class Simple:
             self._FinishTrading()
         elif self._connection.IsOrderComplete(self._pair, initial_order_id):
             self._PreinitStrategy()
-            self._strategy.SetQuantityPrecision1(self._connection.GetQuantityPrecisionForPair(self._pair))
-            self._strategy.SetPricePrecision1(self._connection.GetPricePrecisionForPair(self._pair))
-            self._strategy.SetCommissionSell(self._connection.GetTakerCommission(self._pair))
-            self._strategy.SetCommissionBuy(self._connection.GetTakerCommission(self._pair))
             initial_order_rate = self._connection.GetOrderRate(initial_order_id)
             initial_order_cost = self._connection.GetOrderCost2(initial_order_id)
             self._strategy.Init(initial_order_rate, initial_order_cost)
@@ -181,7 +181,7 @@ class Simple:
                 if is_sell_complete and is_buy_complete:
                     new_initial_rate = self._connection.GetOrderRate(buy_order_id)
                     new_initial_cost = self._connection.GetOrderCost2(buy_order_id)
-                    self._strategy.GoToStep(1)
+                    self._PreinitStrategy()
                     self._strategy.Init(new_initial_rate, new_initial_cost)
                     self._SetOrders()
                 elif is_buy_complete and not is_sell_complete:
