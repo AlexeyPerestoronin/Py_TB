@@ -78,7 +78,7 @@ class Test_Exmo(unittest.TestCase):
         order_id = self._exmo.CreateOrder_BuyTotal(pair, 50, current_buy_rate)
         self.assertTrue(self._exmo.IsOrderOpen(order_id))
         self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, order_id)
-        self._exmo.CancelOrder(order_id)
+        self._exmo.CancelOrderFull(order_id)
         self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, order_id)
         self.assertFalse(self._exmo.IsOrderOpen(order_id))
 

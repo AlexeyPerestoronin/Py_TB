@@ -122,12 +122,6 @@ class Exmo():
         sell_quantity = self.GetUserBalance(Exmo._1FromPair(pair))
         return self._CreateOrder(type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
 
-    # brief: creates an sell-order for selling all target currency that is more saved quantity
-    # note1: if pair is "BTC_USD" the target currency is "BTC"
-    def CreateOrder_SellSaved(self, pair, saved_quantity, sell_rate):
-        sell_quantity = self.GetUserBalance(Exmo._1FromPair(pair)) - saved_quantity
-        return self._CreateOrder(type="sell", pair=pair, quantity=sell_quantity, price=sell_rate)["order_id"]
-
     # brief: creates an sell-order at current market sell-rate
     def CreateOrder_SellMarket(self, pair, quantity):
         return self._CreateOrder(type="market_sell", pair=pair, quantity=quantity, price=0)["order_id"]
@@ -138,6 +132,38 @@ class Exmo():
 
     # brief: cancels the trade-order by its id
     def CancelOrder(self, order_id):
+        return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "order_cancel", order_id=order_id))
+
+    # brief: cancels the trade-order by its id
+    # note1: if a trade-order was partially executed, then the consequences of this will be eliminated
+    def CancelOrderFull(self, order_id):
+        try:
+            order_deals = self.GetOrderDeals(order_id)
+            type = order_deals["type"]
+            cur1 = order_deals["in_currency"]
+            cur2 = order_deals["out_currency"]
+            pair = self._ToPair(cur1, cur2) if type == "buy" else self._ToPair(cur2, cur1)
+            for trade in order_deals["trades"]:
+                if type == "buy":
+                    if self.GetCurrentSellRate(pair) > float(trade["price"]):
+                        sell_quantity = float(trade["quantity"])
+                        sell_quantity -= sell_quantity - float(trade["commission_amount"])
+                        self.CreateOrder_SellMarket(pair, sell_quantity)
+                    else:
+                        error = c_errors.CannotCreateBuyOrder()
+                        error.SetDescription("current sell-rate is less than buy-rate for order-deal")
+                        raise error
+                elif type == "sell":
+                    if self.GetCurrentBuyRate(pair) < float(trade["price"]):
+                        buy_cost = float(trade["amount"])
+                        buy_cost -= float(trade["commission_amount"])
+                        self.CreateOrder_BuyMarketTotal(pair, buy_cost)
+                    else:
+                        error = c_errors.CannotCreateSellOrder()
+                        error.SetDescription("current buy-rate is more than sell-rate for order-deal")
+                        raise error
+        except c_errors.OrderIsNotFoundByID:
+            pass
         return common.ExecuteOrRepeat(common.Lambda(self._QueryPrivate, "order_cancel", order_id=order_id))
 
     # NOTE: next below class-methods are based on upper methods

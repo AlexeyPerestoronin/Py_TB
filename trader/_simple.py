@@ -169,10 +169,10 @@ class Simple:
             is_sell_open = self._connection.IsOrderOpen(sell_order_id)
             is_buy_open = self._connection.IsOrderOpen(buy_order_id)
             if not is_sell_open and is_buy_open:
-                self._connection.CancelOrder(buy_order_id)
+                self._connection.CancelOrderFull(buy_order_id)
                 self._FinishTrading()
             elif not is_buy_open and is_sell_open:
-                self._connection.CancelOrder(sell_order_id)
+                self._connection.CancelOrderFull(sell_order_id)
                 self._strategy = self._strategy.ComputeNextStep()
                 self._SetOrders()
             elif not is_buy_open and not is_sell_open:
