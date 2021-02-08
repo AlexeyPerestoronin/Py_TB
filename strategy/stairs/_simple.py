@@ -191,6 +191,18 @@ class Simple:
         self._ComputeBuyRate()
         self._ComputeBuyQuantity()
 
+    def _MigrateSettings(self):
+        self._next_step = type(self)()
+        self._next_step._previous_step = self
+        # migrate settings(1)
+        self._next_step.SetAvailableCurrency(self._current_available_currency)
+        self._next_step.SetQuantityPrecision2(self._quantity_precision)
+        self._next_step.SetPricePrecision2(self._price_precision)
+        self._next_step.SetCommissionSell(self._sell_commission)
+        self._next_step.SetCommissionBuy(self._buy_commission)
+        self._next_step.SetCoefficient(self._init_coefficient)
+        self._next_step.SetProfit(self._profit)
+
     # brief: set the coefficient of each next cost increaseble
     # param: coefficient - new each next cost increaseble
     def SetCoefficient(self, coefficient):
@@ -313,16 +325,7 @@ class Simple:
     # brief: compute the next-step regarding current trade-strategy
     # return: deep copy of the current trade-strategy presented on the next-step
     def ComputeNextStep(self):
-        self._next_step = type(self)()
-        self._next_step._previous_step = self
-        # migrate settings(1)
-        self._next_step.SetAvailableCurrency(self._current_available_currency)
-        self._next_step.SetQuantityPrecision2(self._quantity_precision)
-        self._next_step.SetPricePrecision2(self._price_precision)
-        self._next_step.SetCommissionSell(self._sell_commission)
-        self._next_step.SetCommissionBuy(self._buy_commission)
-        self._next_step.SetCoefficient(self._init_coefficient)
-        self._next_step.SetProfit(self._profit)
+        self._MigrateSettings()
         # compute cost and rate for next step (as if it is cost and rate for first step)
         cost = self._init_cost + self._buy_cost
         rate = (math.pow(self._buy_commission, 2) * self._GetNextSellRate()) / self._profit
