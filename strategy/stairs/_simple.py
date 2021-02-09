@@ -203,7 +203,6 @@ class Simple:
         self._parameters[const.PARAMS.INIT_RATE] = rate
         self._parameters[const.PARAMS.INIT_COST] = cost
         if self._previous_step:
-            self._parameter = copy.deepcopy(self._previous_step._parameters)
             self._parameters[const.PARAMS.STEP] += 1
             self._statistic = copy.deepcopy(self._previous_step._statistic)
         else:
