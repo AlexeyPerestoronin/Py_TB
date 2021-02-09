@@ -64,3 +64,10 @@ class BuyRateIsLessZero(Stairs):
         Stairs.__init__(self)
     def __str__(self):
         return "buy-rate is less zero"
+
+# brief: exception of unavailable buy-cost: buy-cost less zero
+class BuyCostIsLessZero(Stairs):
+    def __init__(self):
+        Stairs.__init__(self)
+    def __str__(self):
+        return "buy-cost is less zero"

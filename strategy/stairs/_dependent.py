@@ -12,19 +12,19 @@ class Dependency(Simple):
     # return: the sell-rate for next-step
     def _GetNextSellRate(self):
         if self._previous_step:
-            return self._previous_step._buy_rate
+            return self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
         else:
-            return self._init_rate
+            return self._parameters[const.PARAMS.INIT_RATE]
 
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
         if self._previous_step:
-            self._buy_cost = self._previous_step._buy_cost * self._step_coefficient
+            self._parameters[const.PARAMS.STEP_BUY_COST] = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST] * self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
         else:
-            self._buy_cost = self._init_cost * self._step_coefficient
+            self._parameters[const.PARAMS.STEP_BUY_COST] = self._parameters[const.PARAMS.INIT_COST] * self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
 
     # brief: get strategy-ID
     # return: strategy-ID
     @classmethod
     def GetID(cls):
-        return const.ID.STAIRS_DEPENDENT
+        return const.ID.DEPENDENT

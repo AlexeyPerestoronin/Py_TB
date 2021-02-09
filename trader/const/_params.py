@@ -15,7 +15,7 @@ class Params:
         class Strategy:
             ID = "id"
             PROFIT = "profit"
-            COEFFICIENT = "coefficient"
+            COEFFICIENT_1 = "coefficient_1"
             QUANTITY_PRECISION = "quantity_precision"
             AVAILABLE_CURRENCY = "available_currency"
             DIFF_SUBCOST = "diff_subcost"

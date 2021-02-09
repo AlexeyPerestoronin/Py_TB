@@ -8,9 +8,9 @@ class SoftCostIncreaseD(Dependency):
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
         if self._previous_step:
-            self._buy_cost = self._previous_step._buy_cost + self._first_step._init_cost
+            self._parameters[const.PARAMS.STEP_BUY_COST] = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST] + (self._first_step._parameters[const.PARAMS.INIT_COST] / self._first_step._parameters[const.PARAMS.STEP_COEFFICIENT_1])
         else:
-            self._buy_cost = self._first_step._init_cost
+            self._parameters[const.PARAMS.STEP_BUY_COST] = self._first_step._parameters[const.PARAMS.INIT_COST]
 
     # brief: get strategy-ID
     # return: strategy-ID

@@ -7,7 +7,7 @@ class FixedBuyCostS(Simple):
 
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
-        self._buy_cost = self._first_step._init_cost
+        self._parameters[const.PARAMS.STEP_BUY_COST] = self._first_step._parameters[const.PARAMS.INIT_COST]
 
     # brief: get strategy-ID
     # return: strategy-ID

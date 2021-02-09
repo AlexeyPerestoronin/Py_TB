@@ -6,14 +6,10 @@ import strategy.const.errors as error
 # param: id - target strategy-id
 # return: instance of defined strategy-class
 def DefineStrategy(id):
-    if id == const.ID.STAIRS_SIMPLE:
+    if id == const.ID.SIMPLE:
         return ss.Simple()
-    elif id == const.ID.STAIRS_DEPENDENT:
+    elif id == const.ID.DEPENDENT:
         return ss.Dependency()
-    elif id == const.ID.STAIRS_PROGRESSIVE_S:
-        return ss.ProgressiveS()
-    elif id == const.ID.STAIRS_PROGRESSIVE_D:
-        return ss.ProgressiveD()
     elif id == const.ID.FIXED_BUY_COST_S:
         return ss.FixedBuyCostS()
     elif id == const.ID.FIXED_BUY_COST_D:
@@ -22,7 +18,5 @@ def DefineStrategy(id):
         return ss.SoftCostIncreaseS()
     elif id == const.ID.SOFT_COST_INCREASE_D:
         return ss.SoftCostIncreaseD()
-    elif id == const.ID.SOFT_COST_INCREASE_DS:
-        return ss.SoftCostIncreaseDS()
     else:
         raise error.UndefinedStrategyID()

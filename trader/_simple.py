@@ -37,23 +37,7 @@ class Simple:
         self._db_filename = None
 
     def _CheckStrategyClass(self):
-        if isinstance(self._strategy, ss.FixedBuyCostS):
-            return
-        elif isinstance(self._strategy, ss.SoftCostIncreaseS):
-            return
-        elif isinstance(self._strategy, ss.SoftCostIncreaseD):
-            return
-        elif isinstance(self._strategy, ss.SoftCostIncreaseDS):
-            return
-        elif isinstance(self._strategy, ss.FixedBuyCostD):
-            return
-        elif isinstance(self._strategy, ss.ProgressiveS):
-            return
-        elif isinstance(self._strategy, ss.ProgressiveD):
-            return
-        elif isinstance(self._strategy, ss.Dependency):
-            return
-        elif isinstance(self._strategy, ss.Simple):
+        if isinstance(self._strategy, ss.Simple):
             return
         raise error.UnavailableTradeStrategyForTrader()
 
@@ -96,10 +80,10 @@ class Simple:
         for key in self._strategy_params.keys():
             if key == s_key.PROFIT:
                 self._strategy.SetProfit(self._strategy_params[key])
-            elif key == s_key.COEFFICIENT:
-                self._strategy.SetCoefficient(self._strategy_params[key])
+            elif key == s_key.COEFFICIENT_1:
+                self._strategy.SetCoefficient1(self._strategy_params[key])
             elif key == s_key.QUANTITY_PRECISION:
-                self._strategy.SetQuantityPrecision1(self._strategy_params[key])
+                self._strategy.SetQuantityPrecision(self._strategy_params[key])
             elif key == s_key.AVAILABLE_CURRENCY:
                 self._strategy.SetAvailableCurrency(self._strategy_params[key])
             elif key == s_key.DIFF_SUBCOST:
@@ -108,8 +92,8 @@ class Simple:
                 continue
             else:
                 raise error.UndefinedInitStrategyParameter()
-        self._strategy.SetQuantityPrecision1(self._connection.GetQuantityPrecisionForPair(self._pair))
-        self._strategy.SetPricePrecision1(self._connection.GetPricePrecisionForPair(self._pair))
+        self._strategy.SetQuantityPrecision(self._connection.GetQuantityPrecisionForPair(self._pair))
+        self._strategy.SetPricePrecision(self._connection.GetPricePrecisionForPair(self._pair))
         self._strategy.SetCommissionSell(self._connection.GetTakerCommission(self._pair))
         self._strategy.SetCommissionBuy(self._connection.GetTakerCommission(self._pair))
 
