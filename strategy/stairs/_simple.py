@@ -152,10 +152,16 @@ class Simple:
             raising_error.SetSellCost(self._parameters[const.PARAMS.STEP_SELL_COST])
             raising_error.SetSellRate(self._parameters[const.PARAMS.STEP_SELL_RATE])
             raise raising_error
-        sell_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
-        self._parameters[const.PARAMS.STEP_BUY_RATE] = self._PP.Down(- (self._parameters[const.PARAMS.STEP_BUY_COST] * self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]) / (self._parameters[const.PARAMS.STEP_SELL_QUANTITY] - ((self._parameters[const.PARAMS.GLOBAL_PROFIT] * sell_cost) / (sell_rate * self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]))))
-        if self._parameters[const.PARAMS.STEP_BUY_RATE] <= 0.:
+        global_sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
+        global_buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        global_sell_profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
+        total_sell_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
+        step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
+        step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
+        step_buy_rate = self._PP.Down(- (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission))))
+        if step_buy_rate <= 0.:
             raise error.BuyRateIsLessZero()
+        self._parameters[const.PARAMS.STEP_BUY_RATE] = step_buy_rate
 
     # brief: compute buy-quantity for current strategy-step to buy-action
     def _ComputeBuyQuantity(self):
@@ -194,7 +200,7 @@ class Simple:
     # param: cost - currency cost on first-step
     def Init(self, rate, cost):
         self._InitPrecisions()
-        self._parameters[const.PARAMS.INIT_RATE] = self._PP.Up(rate)
+        self._parameters[const.PARAMS.INIT_RATE] = rate
         self._parameters[const.PARAMS.INIT_COST] = cost
         if self._previous_step:
             self._parameter = copy.deepcopy(self._previous_step._parameters)
@@ -203,10 +209,12 @@ class Simple:
         else:
             self._first_step = self
             self._parameters[const.PARAMS.STEP] = 1
-            self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY]
-            self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= self._parameters[const.PARAMS.INIT_COST]
-            if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] < 0.:
+            global_currency = self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY]
+            total_buy_currency = self._parameters[const.PARAMS.INIT_COST]
+            step_available_currency = global_currency - total_buy_currency
+            if step_available_currency < 0.:
                 raise error.ExceededAvailableCurrency()
+            self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] = step_available_currency
         self._ComputeCurrentStep()
         self._is_initialized = True
 
@@ -233,7 +241,7 @@ class Simple:
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] = available_currency
+        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = available_currency
 
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision

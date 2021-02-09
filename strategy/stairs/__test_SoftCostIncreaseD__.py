@@ -85,14 +85,14 @@ class Test3_save_and_restore_from_file(StandartStrategy):
 class Test5_StairsSoftCostIncreaseDS2(unittest.TestCase, Test_Srairs):
     def setUp(self):
         Test_Srairs.__init__(self, SoftCostIncreaseD(), "SoftCostIncreaseD.log")
-        self._stairs.SetAvailableCurrency(1450)
+        self._stairs.SetAvailableCurrency(1400)
         self._stairs.SetCommissionBuy(1)
         self._stairs.SetCommissionSell(1)
         self._stairs.SetCoefficient1(1)
         self._stairs.SetPricePrecision(4)
         self._stairs.SetQuantityPrecision(8)
         self._stairs.SetProfit(1.003)
-        self._stairs.Init(1400, 100)
+        self._stairs.Init(1817.8007, 99.99999941)
 
 if __name__ == "__main__":
     unittest.main()
