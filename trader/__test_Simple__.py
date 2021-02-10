@@ -50,7 +50,7 @@ class TestTrader(unittest.TestCase, trader.Simple):
 class Test1(TestTrader):
     def test1(self):
         self._db.SetInitOrder(self._db.CreateId())
-        self._strategy.Init(1700, 100)
+        self._strategy.Init("1700", "100")
         self._db.SetSellOrder(self._db.CreateId())
         self._db.SetBuyOrder(self._db.CreateId())
 

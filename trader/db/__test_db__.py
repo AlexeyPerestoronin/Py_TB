@@ -70,14 +70,14 @@ class CommonParams:
     def setUp(self):
         # strategy
         self._strategy = ss.Simple()
-        self._strategy.SetAvailableCurrency(1400)
-        self._strategy.SetCommissionBuy(1)
-        self._strategy.SetCommissionSell(1)
+        self._strategy.SetAvailableCurrency("1400")
+        self._strategy.SetCommissionBuy("1")
+        self._strategy.SetCommissionSell("1")
         self._strategy.SetCoefficient1(1.5)
-        self._strategy.SetPricePrecision(4)
-        self._strategy.SetQuantityPrecision(8)
-        self._strategy.SetProfit(1.002)
-        self._strategy.Init(1300, 10)
+        self._strategy.SetPricePrecision("4")
+        self._strategy.SetQuantityPrecision("8")
+        self._strategy.SetProfit("1.002")
+        self._strategy.Init("1300", "10")
         # db
         self._db = db.Simple()
         self._db.RegGetStrategyRecoverystring(self._GetStrategyRecoverystring)

@@ -27,7 +27,9 @@ class Simple:
             const.PARAMS.GLOBAL_PROFIT : None,
             const.PARAMS.GLOBAL_AVAILABLE_CURRENCY : None,
             const.PARAMS.GLOBAL_SELL_COMMISSION : None,
+            const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION : None,
             const.PARAMS.GLOBAL_BUY_COMMISSION : None,
+            const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION : None,
             # init(s)
             const.PARAMS.INIT_RATE : None,
             const.PARAMS.INIT_COST : None,
@@ -64,7 +66,9 @@ class Simple:
     # brief: creates dictionary with recovery parameters by which is possible restore trade-strategy to current state
     # return: recovery dictionary
     def _CreateRecoveryParameters(self):
-        recovery_params = copy.deepcopy(self._first_step._parameters)
+        recovery_params = {}
+        for key, value in self._first_step._parameters.items():
+            recovery_params[key] = str(value)
         recovery_params[const.PARAMS.STEP] = self._parameters[const.PARAMS.STEP]
         return recovery_params
 
@@ -75,41 +79,33 @@ class Simple:
     @classmethod
     def _RestoreFromRecoveryParameters(cls, recovery_params):
         restored_strategy = cls()
-        restored_strategy._parameters = copy.deepcopy(recovery_params)
+        for key, value in recovery_params.items():
+            restored_strategy._parameters[key] = _d(value)
         restored_strategy.Init(recovery_params[const.PARAMS.INIT_RATE], recovery_params[const.PARAMS.INIT_COST])
         return restored_strategy.ComputeToStep(recovery_params[const.PARAMS.STEP])
 
     # collects statistic for all steps of trade-strategy
     def _CollectStatistic(self):
+        total_buy_cost = None
+        total_buy_rate = None
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
         if not self._previous_step:
-            clean_quantity = self._parameters[const.PARAMS.INIT_COST] / self._parameters[const.PARAMS.INIT_RATE]
-            real_quantity = clean_quantity * self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
-            real_quantity = self._QP.Down(real_quantity)
-            lost_quantity = clean_quantity - real_quantity
-            # collection of statistics (volume)
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] = clean_quantity
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] = real_quantity
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_LOST] = lost_quantity
-            # collection of statistics (cost)
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CLEAN] = self._parameters[const.PARAMS.INIT_COST]
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] = real_quantity * self._parameters[const.PARAMS.INIT_RATE]
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] = lost_quantity * self._parameters[const.PARAMS.INIT_RATE]
+            total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
+            total_buy_rate = self._parameters[const.PARAMS.INIT_RATE]
         else:
-            # collection of statistics (volume)
-            clean_quantity = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST] / self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
-            real_quantity = clean_quantity * self._previous_step._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
-            real_quantity = self._QP.Down(real_quantity)
-            lost_quantity = clean_quantity - real_quantity
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] += clean_quantity
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] += real_quantity
-            self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_LOST] += lost_quantity
-            # collection of statistics (cost)
-            clean_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
-            real_cost = real_quantity * self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
-            lost_cost = clean_cost - real_cost
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CLEAN] += clean_cost
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_cost
-            self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] += lost_cost
+            total_buy_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
+            total_buy_rate = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
+        # collection of statistics (volume)
+        clean_quantity = self._QP.DownDecimal(total_buy_cost / total_buy_rate)
+        real_quantity = self._QP.DownDecimal(clean_quantity * buy_commission)
+        lost_quantity = clean_quantity - real_quantity
+        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] += clean_quantity
+        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] += real_quantity
+        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_LOST] += lost_quantity
+        # collection of statistics (cost)
+        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CLEAN] += total_buy_cost
+        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_quantity * total_buy_rate
+        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] += lost_quantity * total_buy_rate
 
     # brief: gets sell-rate for next-step
     # return: the sell-rate for next-step
@@ -124,7 +120,7 @@ class Simple:
 
     # brief: compute sell-cost for current strategy-step to sell-action
     def _ComputeSellCost(self):
-        self._parameters[const.PARAMS.STEP_SELL_COST] = self._PP.Down(self._parameters[const.PARAMS.STEP_SELL_QUANTITY] * self._parameters[const.PARAMS.STEP_SELL_RATE])
+        self._parameters[const.PARAMS.STEP_SELL_COST] = self._PP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY] * self._parameters[const.PARAMS.STEP_SELL_RATE])
     
     # brief: compute sell-profit for current strategy-step to sell-action
     def _ComputeSellProfit(self):
@@ -158,7 +154,7 @@ class Simple:
         total_sell_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
         step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
         step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
-        step_buy_rate = self._PP.Down(- (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission))))
+        step_buy_rate = self._PP.DownDecimal(- (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission))))
         if step_buy_rate <= 0.:
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = step_buy_rate
@@ -200,8 +196,8 @@ class Simple:
     # param: cost - currency cost on first-step
     def Init(self, rate, cost):
         self._InitPrecisions()
-        self._parameters[const.PARAMS.INIT_RATE] = rate
-        self._parameters[const.PARAMS.INIT_COST] = cost
+        self._parameters[const.PARAMS.INIT_RATE] = _d(rate)
+        self._parameters[const.PARAMS.INIT_COST] = _d(cost)
         if self._previous_step:
             self._parameters[const.PARAMS.STEP] += 1
             self._statistic = copy.deepcopy(self._previous_step._statistic)
@@ -220,37 +216,41 @@ class Simple:
     # brief: set the coefficient of each next cost increaseble
     # param: coefficient - new each next cost increaseble
     def SetCoefficient1(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1] = coefficient
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1] = _d(coefficient)
 
     # brief: set a trade-commission for buy-order
     # param: buy_commission - new value of a trade-commission for buy-order
-    def SetCommissionBuy(self, buy_commission):
-        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION] = buy_commission
+    # param: buy_commission_concession - new value of concession of a trade-commission for buy-order
+    def SetCommissionBuy(self, buy_commission, buy_commission_concession=0.5):
+        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION] = _d(buy_commission)
+        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION] = _d(buy_commission_concession)
 
     # brief: set a trade-commission for sell-order
     # param: sell_commission - new value of a trade-commission for sell-order
-    def SetCommissionSell(self, sell_commission):
-        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION] = sell_commission
+    # param: sell_commission_concession - new value of concession of a trade-commission for sell-order
+    def SetCommissionSell(self, sell_commission, sell_commission_concession=0.5):
+        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION] = _d(sell_commission)
+        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION] = _d(sell_commission_concession)
 
     # brief: set a trade-profit
     # param: profit - new value of a trade-profit
     def SetProfit(self, profit):
-        self._parameters[const.PARAMS.GLOBAL_PROFIT] = profit
+        self._parameters[const.PARAMS.GLOBAL_PROFIT] = _d(profit)
 
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = available_currency
+        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = _d(available_currency)
 
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision
     def SetQuantityPrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION] = precision
+        self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION] = _d(precision)
 
     # brief: set a precision of all mathematical operations performs with trade-rate
     # param: precision - new value of a precision
     def SetPricePrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_PRICE_PRECISION] = precision
+        self._parameters[const.PARAMS.GLOBAL_PRICE_PRECISION] = _d(precision)
 
     # brief: check is strategy initialized
     # return: true - if is initialized; false - vise versa
@@ -307,9 +307,12 @@ class Simple:
     def ComputeNextStep(self):
         self._MigrateSettings()
         # compute cost and rate for next step (as if it is cost and rate for first step)
-        cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
-        rate = (math.pow(self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION], 2) * self._GetNextSellRate()) / self._parameters[const.PARAMS.GLOBAL_PROFIT]
-        self._next_step.Init(rate, cost)
+        next_sell_rate = self._GetNextSellRate()
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
+        total_buy_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
+        everage_buy_rate = self._PP.UpDecimal(buy_commission**2 * next_sell_rate / profit)
+        self._next_step.Init(everage_buy_rate, total_buy_cost)
         return self._next_step
 
     # brief: compute the specified-step regarding current trade-strategy
@@ -339,7 +342,8 @@ class Simple:
     # param: sell_cost - desired cost of sell
     # return: trade-rate for sell
     def ComputeSellRate(self, sell_quantity, sell_cost):
-        return self._PP.Up((sell_cost / self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]) / sell_quantity)
+        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
+        return self._PP.UpDecimal((sell_cost / sell_commission) / sell_quantity)
 
     # brief: gets string from which is possible restore trade-strategy to current state
     # return: trade-strategy restore string

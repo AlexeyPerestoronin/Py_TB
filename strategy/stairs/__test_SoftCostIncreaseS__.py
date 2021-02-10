@@ -17,14 +17,14 @@ from strategy.stairs import SoftCostIncreaseS
 class StandartStrategy(unittest.TestCase):
     def setUp(self):
         self._stairs = SoftCostIncreaseS()
-        self._stairs.SetAvailableCurrency(200000)
-        self._stairs.SetCommissionBuy(0.996)
-        self._stairs.SetCommissionSell(0.996)
-        self._stairs.SetCoefficient1(2)
-        self._stairs.SetPricePrecision(4)
-        self._stairs.SetQuantityPrecision(8)
-        self._stairs.SetProfit(1.003)
-        self._stairs.Init(1400, 100)
+        self._stairs.SetAvailableCurrency("200000")
+        self._stairs.SetCommissionBuy("0.996")
+        self._stairs.SetCommissionSell("0.996")
+        self._stairs.SetCoefficient1("2")
+        self._stairs.SetPricePrecision("4")
+        self._stairs.SetQuantityPrecision("8")
+        self._stairs.SetProfit("1.003")
+        self._stairs.Init("1400", "100")
 
     def CompareTwoStrategy(self, strategy_1, strategy_2):
         self.assertTrue(strategy_1.IsInitialized())
@@ -85,14 +85,14 @@ class Test3_save_and_restore_from_file(StandartStrategy):
 class Test5_StairsSoftCostIncreaseDS2(unittest.TestCase, Test_Srairs):
     def setUp(self):
         Test_Srairs.__init__(self, SoftCostIncreaseS(), "SoftCostIncreaseS.log")
-        self._stairs.SetAvailableCurrency(1400)
-        self._stairs.SetCommissionBuy(1)
-        self._stairs.SetCommissionSell(1)
-        self._stairs.SetCoefficient1(2)
-        self._stairs.SetPricePrecision(4)
-        self._stairs.SetQuantityPrecision(8)
-        self._stairs.SetProfit(1.003)
-        self._stairs.Init(1400, 100)
+        self._stairs.SetAvailableCurrency("1400")
+        self._stairs.SetCommissionBuy("1")
+        self._stairs.SetCommissionSell("1")
+        self._stairs.SetCoefficient1("2")
+        self._stairs.SetPricePrecision("4")
+        self._stairs.SetQuantityPrecision("8")
+        self._stairs.SetProfit("1.003")
+        self._stairs.Init("1400", "100")
 
 if __name__ == "__main__":
     unittest.main()
