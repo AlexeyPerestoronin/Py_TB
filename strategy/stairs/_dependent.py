@@ -18,10 +18,13 @@ class Dependency(Simple):
 
     # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
+        base_cost = None
+        coefficient1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
         if self._previous_step:
-            self._parameters[const.PARAMS.STEP_BUY_COST] = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST] * self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
+            base_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
         else:
-            self._parameters[const.PARAMS.STEP_BUY_COST] = self._parameters[const.PARAMS.INIT_COST] * self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
+            base_cost = self._parameters[const.PARAMS.INIT_COST]
+        self._parameters[const.PARAMS.STEP_BUY_COST] = base_cost * coefficient1
 
     # brief: get strategy-ID
     # return: strategy-ID

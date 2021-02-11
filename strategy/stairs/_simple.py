@@ -214,9 +214,9 @@ class Simple:
         self._is_initialized = True
 
     # brief: set the coefficient of each next cost increaseble
-    # param: coefficient - new each next cost increaseble
-    def SetCoefficient1(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1] = _d(coefficient)
+    # param: coefficient1 - new each next cost increaseble
+    def SetCoefficient1(self, coefficient1):
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1] = _d(coefficient1)
 
     # brief: set a trade-commission for buy-order
     # param: buy_commission - new value of a trade-commission for buy-order

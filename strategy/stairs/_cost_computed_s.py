@@ -29,12 +29,16 @@ class CostComputedS(ss.Simple):
 
     # brief: compute buy-rate for current strategy-step to buy-action
     def _ComputeBuyRate(self):
+        base_rate = None
+        coefficient1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
         if self._previous_step:
-            self._parameters[const.PARAMS.STEP_BUY_RATE] = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE] - self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
+            base_rate = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
         else:
-            self._parameters[const.PARAMS.STEP_BUY_RATE] = self._parameters[const.PARAMS.INIT_RATE] - self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
-        if self._parameters[const.PARAMS.STEP_BUY_RATE] <= 0.:
+            base_rate = self._parameters[const.PARAMS.INIT_RATE]
+        buy_rate = base_rate - coefficient1
+        if buy_rate <= 0.:
             raise error.BuyRateIsLessZero()
+        self._parameters[const.PARAMS.STEP_BUY_RATE] = buy_rate
 
     # brief: compute buy-quantity for current strategy-step to buy-action
     def _ComputeBuyQuantity(self):

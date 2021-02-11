@@ -11,3 +11,4 @@ from strategy.stairs._soft_cost_increase_d import *
 from strategy.stairs._cost_computed_s import *
 
 from strategy.stairs._cost_computed_d import *
+from strategy.stairs._cost_computed_dd import *
