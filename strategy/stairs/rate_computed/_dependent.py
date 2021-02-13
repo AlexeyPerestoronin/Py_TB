@@ -1,22 +1,19 @@
 import math
 import copy
 
-from strategy.stairs import Simple
 import strategy.const as const
+import strategy.stairs.rate_computed as ss_rc
 
-class Dependency(Simple):
+class RCDependency(ss_rc.RCSimple):
     def __init__(self):
-        Simple.__init__(self)
+        ss_rc.RCSimple.__init__(self)
 
-    # brief: gets sell-rate for next-step
-    # return: the sell-rate for next-step
     def _GetNextSellRate(self):
         if self._previous_step:
             return self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
         else:
             return self._parameters[const.PARAMS.INIT_RATE]
 
-    # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
         base_cost = None
         coefficient1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
@@ -26,8 +23,6 @@ class Dependency(Simple):
             base_cost = self._parameters[const.PARAMS.INIT_COST]
         self._parameters[const.PARAMS.STEP_BUY_COST] = base_cost * coefficient1
 
-    # brief: get strategy-ID
-    # return: strategy-ID
     @classmethod
     def GetID(cls):
-        return const.ID.DEPENDENT
+        return const.ID.RCDependency

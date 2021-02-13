@@ -1,12 +1,11 @@
-import strategy.stairs as ss
 import strategy.const as const
 import strategy.const.errors as error
+import strategy.stairs.rate_computed as ss_rc
 
-class CostComputedS(ss.Simple):
+class CCSimple(ss_rc.RCSimple):
     def __init__(self):
-        ss.Simple.__init__(self)
+        ss_rc.RCSimple.__init__(self)
 
-    # brief: compute buy-cost for current strategy-step to buy-action
     def _ComputeBuyCost(self):
         sell_rate = self._GetNextSellRate()
         sell_profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
@@ -27,7 +26,6 @@ class CostComputedS(ss.Simple):
             raising_error.SetSellRate(self._parameters[const.PARAMS.STEP_SELL_RATE])
             raise raising_error
 
-    # brief: compute buy-rate for current strategy-step to buy-action
     def _ComputeBuyRate(self):
         base_rate = None
         coefficient1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
@@ -40,27 +38,20 @@ class CostComputedS(ss.Simple):
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = buy_rate
 
-    # brief: compute buy-quantity for current strategy-step to buy-action
     def _ComputeBuyQuantity(self):
         self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = self._QP.Down(self._parameters[const.PARAMS.STEP_BUY_COST] / self._parameters[const.PARAMS.STEP_BUY_RATE])
 
-    # brief: compute current strategy-step
-    def _ComputeCurrentStep(self):
-        self._CollectStatistic()
-        # (ceff) sequence of calculations
-        self._ComputeNextCoefficient1()
-        # (sell) sequence of calculations
+    def _ComputeSellAndBuyParameters(self):
+        # sequence of calculations 1: sell
         self._ComputeSellQuantity()
         self._ComputeSellRate()
         self._ComputeSellCost()
         self._ComputeSellProfit()
-        # (buy) sequence of calculations
+        # sequence of calculations 2: buy
         self._ComputeBuyRate()
         self._ComputeBuyCost()
         self._ComputeBuyQuantity()
 
-    # brief: get strategy-ID
-    # return: strategy-ID
     @classmethod
     def GetID(cls):
-        return const.ID.COST_COMPUTED_S
+        return const.ID.CCSimple
