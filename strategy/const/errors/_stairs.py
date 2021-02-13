@@ -5,6 +5,13 @@ class Stairs(Exception):
     def __str__(self):
         return "some error in stairs-trade-strategy"
 
+# brief: some class-method in stairs-trade-strategy-class is not implemented
+class MethodIsNotImplemented(Stairs):
+    def __init__(self):
+        Stairs.__init__(self)
+    def __str__(self):
+        return "some class-method in stairs-trade-strategy-class is not implemented"
+
 # brief: exception of exceeded available currency
 class ExceededAvailableCurrency(Stairs):
     class NotSellQuantity(Stairs):

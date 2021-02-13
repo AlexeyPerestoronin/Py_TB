@@ -93,7 +93,7 @@ class Simple:
             else:
                 raise error.UndefinedInitStrategyParameter()
         self._strategy.SetQuantityPrecision(self._connection.GetQuantityPrecisionForPair(self._pair))
-        self._strategy.SetPricePrecision(self._connection.GetPricePrecisionForPair(self._pair))
+        self._strategy.SetRatePrecision(self._connection.GetPricePrecisionForPair(self._pair))
         self._strategy.SetCommissionSell(self._connection.GetTakerCommission(self._pair))
         self._strategy.SetCommissionBuy(self._connection.GetTakerCommission(self._pair))
 

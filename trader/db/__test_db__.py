@@ -74,7 +74,7 @@ class CommonParams:
         self._strategy.SetCommissionBuy("1")
         self._strategy.SetCommissionSell("1")
         self._strategy.SetCoefficient1(1.5)
-        self._strategy.SetPricePrecision("4")
+        self._strategy.SetRatePrecision("4")
         self._strategy.SetQuantityPrecision("8")
         self._strategy.SetProfit("1.002")
         self._strategy.Init("1300", "10")

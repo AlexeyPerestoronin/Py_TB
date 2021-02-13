@@ -16,12 +16,15 @@ class Simple:
     def __init__(self):
         # flags(s)
         self._is_initialized = False
+        # steps(s)
         self._next_step = None
         self._first_step = None
         self._previous_step = None
+        # setting(s)
         self._parameters = {
             # global(s)
-            const.PARAMS.GLOBAL_PRICE_PRECISION : None,
+            const.PARAMS.GLOBAL_COST_PRECISION : None,
+            const.PARAMS.GLOBAL_RATE_PRECISION : None,
             const.PARAMS.GLOBAL_QUANTITY_PRECISION : None,
             const.PARAMS.GLOBAL_COEFFICIENT_1 : None,
             const.PARAMS.GLOBAL_COEFFICIENT_2 : None,
@@ -68,13 +71,16 @@ class Simple:
             }
         }
         # precision(s)
-        self._PP = None
+        self._CP = None
+        self._RP = None
         self._QP = None
 
     # brief: initializes classes for precision computing
     def _InitPrecisions(self):
-        if not self._PP:
-            self._PP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_PRICE_PRECISION])
+        if not self._CP:
+            self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_COST_PRECISION])
+        if not self._RP:
+            self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION])
         if not self._QP:
             self._QP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION])
 
@@ -116,7 +122,7 @@ class Simple:
         # collection of statistics (volume)
         clean_quantity = self._QP.DownDecimal(total_buy_cost / total_buy_rate)
         real_quantity = self._QP.DownDecimal(clean_quantity * buy_commission)
-        lost_quantity = clean_quantity - real_quantity
+        lost_quantity = self._QP.DownDecimal(clean_quantity - real_quantity)
         self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] += clean_quantity
         self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] += real_quantity
         self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_LOST] += lost_quantity
@@ -151,50 +157,50 @@ class Simple:
         self._parameters[const.PARAMS.STEP_COEFFICIENT_5] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_5]
 
     # brief: gets sell-rate for next-step
-    # note1: the main parameter for Simple-strategies-classes
+    # note1: must be redefined in child class
     # return: the sell-rate for next-step
     def _GetNextSellRate(self):
-        return self._parameters[const.PARAMS.INIT_RATE]
+        raise error.MethodIsNotImplemented()
 
     # brief: compute sell-cost for current strategy-step to sell-action
     # note1: must be redefined in child class
     def _ComputeSellCost(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute sell-profit for current strategy-step to sell-action
     # note1: must be redefined in child class
     def _ComputeSellProfit(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute sell-rate for current strategy-step to sell-action
     # note1: must be redefined in child class
     def _ComputeSellRate(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute sell-quantity for current-strategy-step to sell-action
     # note1: must be redefined in child class
     def _ComputeSellQuantity(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute buy-cost for current strategy-step to buy-action
     # note1: must be redefined in child class
     def _ComputeBuyCost(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute buy-rate for current strategy-step to buy-action
     # note1: must be redefined in child class
     def _ComputeBuyRate(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute buy-quantity for current strategy-step to buy-action
     # note1: must be redefined in child class
     def _ComputeBuyQuantity(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute sell and buy parameters for current strategy-step
     # note1: must be redefined in child class
     def _ComputeSellAndBuyParameters(self):
-        pass
+        raise error.MethodIsNotImplemented()
 
     # brief: compute current strategy-step
     def _ComputeCurrentStep(self):
@@ -211,21 +217,26 @@ class Simple:
     # brief: migrates settings of current strategy to a new next strategy class
     def _MigrateSettingsToNextStep(self):
         self._next_step = type(self)()
+        # migrate step 1: precission(s)
+        self._next_step._CP = self._CP
+        self._next_step._RP = self._RP
+        self._next_step._QP = self._QP
+        # migrate step 2: step(s)
         self._next_step._previous_step = self
         self._next_step._first_step = self._first_step
+        # migrate step 3: step settings(s)
+        self._next_step._statistic = copy.deepcopy(self._statistic)
         self._next_step._parameters = copy.deepcopy(self._parameters)
 
     # brief: strategy initialization
-    # note1: this function must be called only after call of SetCoefficient1, SetCommission and SetProfit functions
     # param: rate - currency rate on first-step
     # param: cost - currency cost on first-step
     def Init(self, rate, cost):
         self._InitPrecisions()
-        self._parameters[const.PARAMS.INIT_RATE] = _d(rate)
-        self._parameters[const.PARAMS.INIT_COST] = _d(cost)
+        self._parameters[const.PARAMS.INIT_RATE] = self._RP.UpDecimal(_d(rate))
+        self._parameters[const.PARAMS.INIT_COST] = self._CP.DownDecimal(_d(cost))
         if self._previous_step:
             self._parameters[const.PARAMS.STEP] += 1
-            self._statistic = copy.deepcopy(self._previous_step._statistic)
         else:
             self._first_step = self
             self._parameters[const.PARAMS.STEP] = 1
@@ -287,17 +298,22 @@ class Simple:
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = _d(available_currency)
+        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = self._CP.DownDecimal(_d(available_currency))
 
+    # brief: set a precision of all mathematical operations performs with trade-cost
+    # param: precision - new value of a precision
+    def SetCostPrecision(self, precision):
+        self._parameters[const.PARAMS.GLOBAL_COST_PRECISION] = _d(precision)
+    
+    # brief: set a precision of all mathematical operations performs with trade-rate
+    # param: precision - new value of a precision
+    def SetRatePrecision(self, precision):
+        self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION] = _d(precision)
+    
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision
     def SetQuantityPrecision(self, precision):
         self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION] = _d(precision)
-
-    # brief: set a precision of all mathematical operations performs with trade-rate
-    # param: precision - new value of a precision
-    def SetPricePrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_PRICE_PRECISION] = _d(precision)
 
     # NOTE: Get...
 
@@ -384,7 +400,7 @@ class Simple:
                     const.INFO.DESCRIPTION : "commission for sale transactions imposed by the trading-exchange"
                 },
                 const.INFO.GLOBAL.PRICE_PRECISION : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_PRICE_PRECISION],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION],
                     const.INFO.DESCRIPTION : "precision for computing of trade-rate"
                 },
                 const.INFO.GLOBAL.QUANTITY_PRECISION : {
@@ -495,7 +511,7 @@ class Simple:
         buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
         profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
         total_buy_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
-        everage_buy_rate = self._PP.UpDecimal(buy_commission**2 * next_sell_rate / profit)
+        everage_buy_rate = self._RP.UpDecimal(buy_commission**2 * next_sell_rate / profit)
         self._next_step.Init(everage_buy_rate, total_buy_cost)
         return self._next_step
 
@@ -517,7 +533,7 @@ class Simple:
     # return: trade-rate for sell
     def ComputeSellRate(self, sell_quantity, sell_cost):
         sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
-        return self._PP.UpDecimal((sell_cost / sell_commission) / sell_quantity)
+        return (sell_cost / sell_commission) / sell_quantity
 
     # NOTE: Create...
 
