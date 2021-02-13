@@ -21,6 +21,7 @@ class StandartStrategy(unittest.TestCase):
         self._stairs.SetCommissionBuy("0.996")
         self._stairs.SetCommissionSell("0.996")
         self._stairs.SetCoefficient1("20")
+        self._stairs.SetCostPrecision("4")
         self._stairs.SetRatePrecision("4")
         self._stairs.SetQuantityPrecision("8")
         self._stairs.SetProfit("1.003")
@@ -33,12 +34,12 @@ class StandartStrategy(unittest.TestCase):
         self.assertEqual(strategy_1.GetSellRate(), strategy_2.GetSellRate())
         self.assertEqual(strategy_1.GetSellCost(), strategy_2.GetSellCost())
         self.assertEqual(strategy_1.GetSellQuantity(), strategy_2.GetSellQuantity())
-        self.assertEqual(strategy_1.GetSellProfit(), strategy_2.GetSellProfit())
+        self.assertEqual(strategy_1.GetProfit(), strategy_2.GetProfit())
         self.assertEqual(strategy_1.GetBuyRate(), strategy_2.GetBuyRate())
         self.assertEqual(strategy_1.GetBuyCost(), strategy_2.GetBuyCost())
         self.assertEqual(strategy_1.GetBuyQuantity(), strategy_2.GetBuyQuantity())
-        self.assertEqual(strategy_1.GetTotalBuyCost(), strategy_2.GetTotalBuyCost())
-        self.assertEqual(strategy_1.GetTotalEverageBuyRate(), strategy_2.GetTotalEverageBuyRate())
+        self.assertEqual(strategy_1.GetTotalActivityCost(), strategy_2.GetTotalActivityCost())
+        self.assertEqual(strategy_1.GetTotalEverageActivityRate(), strategy_2.GetTotalEverageActivityRate())
 
 class Test1_ID(unittest.TestCase):
     def test_GetID(self):
@@ -90,6 +91,7 @@ class Test5_StairsSoftCostIncreaseDS2(unittest.TestCase, Test_Srairs):
         self._stairs.SetCommissionBuy("1")
         self._stairs.SetCommissionSell("1")
         self._stairs.SetCoefficient1("20")
+        self._stairs.SetCostPrecision("4")
         self._stairs.SetRatePrecision("4")
         self._stairs.SetQuantityPrecision("8")
         self._stairs.SetProfit("1.003")

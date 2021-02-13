@@ -21,7 +21,6 @@ class StrategyPreview:
             key = s_const.INFO.GLOBAL
             logger.LogMessage("strategy-class is {}", repr(type(self._strategy)))
             info_global = self._strategy.GetInfo()[key]
-            logger.LogInfo("increase-cost-coefficient = {}", info_global[key.COEFFICIENT])
             logger.LogInfo("total available currency  = {}", info_global[key.TOTAL_AVAILABLE_CURRENCY])
             logger.LogInfo("buy-commission            = {}", info_global[key.BUY_COMMISSION])
             logger.LogInfo("sell-commission           = {}", info_global[key.SELL_COMMISSION])
@@ -55,12 +54,13 @@ class StrategyPreview:
                     sub_logger.LogInfo("difference rate       = {}", i_step[key.DIFFERENCE_RATE])
                     sub_logger.LogInfo("average rate          = {}", i_step[key.AVERAGE_RATE])
                     sub_logger.LogInfo("sell rate (0%-profit) = {}", i_step[key.SELL_RATE_0])
-                    sub_logger.LogInfo("sell cost             = {}", i_step[key.TOTAL_SELL_COST])
-                    sub_logger.LogInfo("sell profit           = {}", i_step[key.TOTAL_SELL_PROFIT])
+                    sub_logger.LogInfo("sell profit           = {}", i_step[key.SELL_PROFIT])
                     sub_logger.LogInfo("sell rate             = {}", i_step[key.SELL_RATE])
-                    sub_logger.LogInfo("buy ceff              = {}", i_step[key.COEFFICIENT])
-                    sub_logger.LogInfo("buy cost              = {}", i_step[key.BUY_COST])
+                    sub_logger.LogInfo("sell cost             = {}", i_step[key.SELL_COST])
+                    sub_logger.LogInfo("sell quantity         = {}", i_step[key.SELL_QUANTITY])
                     sub_logger.LogInfo("buy rate              = {}", i_step[key.BUY_RATE])
+                    sub_logger.LogInfo("buy cost              = {}", i_step[key.BUY_COST])
+                    sub_logger.LogInfo("buy quantity          = {}", i_step[key.BUY_QUANTITY])
             try:
                 self._strategy = self._strategy.ComputeNextStep()
             except s_error.ExceededAvailableCurrency as eac_error:
@@ -75,7 +75,7 @@ class StrategyPreview:
 
     def GetPreview(self):
         II = lambda data_type : isinstance(self._strategy, data_type)
-        if II(ss.Simple):
+        if II(ss.StairsBase):
             self._StairsStrategyPreview()
         else:
             raise s_error.UndefinedStrategy()

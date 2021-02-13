@@ -1,6 +1,8 @@
 
 class ID:
-    Simple = "Simple"
+    StairsBase = "StairsBase"
+    StairsSellBuy = "StairsSellBuy"
+    StairsBuySell = "StairsBuySell"
     # NOTE: RC...
     RCSimple = "RCSimple"
     RCDependency = "RCDependency"

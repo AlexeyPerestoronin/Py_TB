@@ -11,9 +11,9 @@ import strategy.const as const
 import strategy.const.errors as error
 
 # brief: implements simple rate-computed strairs trade-strategy
-class RCSimple(ss.Simple):
+class RCSimple(ss.StairsBuySell):
     def __init__(self):
-        ss.Simple.__init__(self)
+        ss.StairsBuySell.__init__(self)
 
     def _GetNextSellRate(self):
         return self._parameters[const.PARAMS.INIT_RATE]
@@ -21,7 +21,7 @@ class RCSimple(ss.Simple):
     def _ComputeSellCost(self):
         sell_rate = self._parameters[const.PARAMS.STEP_SELL_RATE]
         total_buy_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
-        self._parameters[const.PARAMS.STEP_SELL_COST] = self._CP.DownDecimal(total_buy_quantity * sell_rate)
+        self._parameters[const.PARAMS.STEP_SELL_COST] = total_buy_quantity * sell_rate
     
     def _ComputeSellProfit(self):
         sell_cost = self._parameters[const.PARAMS.STEP_SELL_COST]
@@ -32,25 +32,25 @@ class RCSimple(ss.Simple):
         profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
         total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
         total_buy_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
-        self._parameters[const.PARAMS.STEP_SELL_RATE] = self._RP.UpDecimal(self.ComputeSellRate(total_buy_quantity, total_buy_cost * profit))
+        self._parameters[const.PARAMS.STEP_SELL_RATE] = self.ComputeSellRate(total_buy_quantity, total_buy_cost * profit)
 
     def _ComputeSellQuantity(self):
-        total_buy_quantity_for_current_step = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
-        self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = total_buy_quantity_for_current_step
+        total_buy_quantity = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
+        self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = total_buy_quantity
 
     def _ComputeBuyCost(self):
         total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
         ceff_1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
-        self._parameters[const.PARAMS.STEP_BUY_COST] = self._CP.DownDecimal(total_buy_cost * ceff_1)
+        self._parameters[const.PARAMS.STEP_BUY_COST] = total_buy_cost * ceff_1
 
     def _ComputeBuyRate(self):
         sell_rate = self._GetNextSellRate()
         self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= self._parameters[const.PARAMS.STEP_BUY_COST]
         if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] < 0.:
             raising_error = error.ExceededAvailableCurrency()
-            raising_error.SetSellQuantity(self._parameters[const.PARAMS.STEP_SELL_QUANTITY])
-            raising_error.SetSellCost(self._parameters[const.PARAMS.STEP_SELL_COST])
-            raising_error.SetSellRate(self._parameters[const.PARAMS.STEP_SELL_RATE])
+            raising_error.SetSellQuantity(self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY]))
+            raising_error.SetSellCost(self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_COST]))
+            raising_error.SetSellRate(self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE]))
             raise raising_error
         global_sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
         global_buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
@@ -58,13 +58,15 @@ class RCSimple(ss.Simple):
         total_sell_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
         step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
         step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
-        step_buy_rate = self._RP.DownDecimal(- (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission))))
+        step_buy_rate = - (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission)))
         if step_buy_rate <= 0.:
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = step_buy_rate
 
     def _ComputeBuyQuantity(self):
-        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_COST] / self._parameters[const.PARAMS.STEP_BUY_RATE])
+        step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
+        step_buy_rate = self._parameters[const.PARAMS.STEP_BUY_RATE]
+        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = step_buy_cost / step_buy_rate
 
     def _ComputeSellAndBuyParameters(self):
         # sequence of calculations 1: sell

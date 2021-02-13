@@ -21,9 +21,9 @@ class CCSimple(ss_rc.RCSimple):
         self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= buy_cost
         if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] < 0.:
             raising_error = error.ExceededAvailableCurrency()
-            raising_error.SetSellQuantity(self._parameters[const.PARAMS.STEP_SELL_QUANTITY])
-            raising_error.SetSellCost(self._parameters[const.PARAMS.STEP_SELL_COST])
-            raising_error.SetSellRate(self._parameters[const.PARAMS.STEP_SELL_RATE])
+            raising_error.SetSellQuantity(self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY]))
+            raising_error.SetSellCost(self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_COST]))
+            raising_error.SetSellRate(self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE]))
             raise raising_error
 
     def _ComputeBuyRate(self):
@@ -39,7 +39,9 @@ class CCSimple(ss_rc.RCSimple):
         self._parameters[const.PARAMS.STEP_BUY_RATE] = buy_rate
 
     def _ComputeBuyQuantity(self):
-        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = self._QP.Down(self._parameters[const.PARAMS.STEP_BUY_COST] / self._parameters[const.PARAMS.STEP_BUY_RATE])
+        step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
+        step_buy_rate = self._parameters[const.PARAMS.STEP_BUY_RATE]
+        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = step_buy_cost / step_buy_rate
 
     def _ComputeSellAndBuyParameters(self):
         # sequence of calculations 1: sell

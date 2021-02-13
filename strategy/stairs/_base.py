@@ -12,7 +12,7 @@ import strategy.const.errors as error
 _d = decimal.Decimal
 
 # brief: implements template for all simple strairs trade-strategy
-class Simple:
+class StairsBase:
     def __init__(self):
         # flags(s)
         self._is_initialized = False
@@ -78,7 +78,7 @@ class Simple:
     # brief: initializes classes for precision computing
     def _InitPrecisions(self):
         if not self._CP:
-            self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_COST_PRECISION])
+            self._CP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_COST_PRECISION])
         if not self._RP:
             self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION])
         if not self._QP:
@@ -109,27 +109,9 @@ class Simple:
         return restored_strategy.ComputeToStep(recovery_params[const.PARAMS.STEP])
 
     # collects statistic for all steps of trade-strategy
+    # note1: must be redefined in child class
     def _CollectStatistic(self):
-        total_buy_cost = None
-        total_buy_rate = None
-        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
-        if not self._previous_step:
-            total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
-            total_buy_rate = self._parameters[const.PARAMS.INIT_RATE]
-        else:
-            total_buy_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
-            total_buy_rate = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
-        # collection of statistics (volume)
-        clean_quantity = self._QP.DownDecimal(total_buy_cost / total_buy_rate)
-        real_quantity = self._QP.DownDecimal(clean_quantity * buy_commission)
-        lost_quantity = self._QP.DownDecimal(clean_quantity - real_quantity)
-        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN] += clean_quantity
-        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL] += real_quantity
-        self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_LOST] += lost_quantity
-        # collection of statistics (cost)
-        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CLEAN] += total_buy_cost
-        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_quantity * total_buy_rate
-        self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST] += lost_quantity * total_buy_rate
+        raise error.MethodIsNotImplemented()
 
     # brief: compute next coefficient-1
     # note1: must be redefined in child class if it is need
@@ -233,8 +215,8 @@ class Simple:
     # param: cost - currency cost on first-step
     def Init(self, rate, cost):
         self._InitPrecisions()
-        self._parameters[const.PARAMS.INIT_RATE] = self._RP.UpDecimal(_d(rate))
-        self._parameters[const.PARAMS.INIT_COST] = self._CP.DownDecimal(_d(cost))
+        self._parameters[const.PARAMS.INIT_RATE] = _d(rate)
+        self._parameters[const.PARAMS.INIT_COST] = _d(cost)
         if self._previous_step:
             self._parameters[const.PARAMS.STEP] += 1
         else:
@@ -298,18 +280,18 @@ class Simple:
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = self._CP.DownDecimal(_d(available_currency))
+        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = _d(available_currency)
 
     # brief: set a precision of all mathematical operations performs with trade-cost
     # param: precision - new value of a precision
     def SetCostPrecision(self, precision):
         self._parameters[const.PARAMS.GLOBAL_COST_PRECISION] = _d(precision)
-    
+
     # brief: set a precision of all mathematical operations performs with trade-rate
     # param: precision - new value of a precision
     def SetRatePrecision(self, precision):
         self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION] = _d(precision)
-    
+
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision
     def SetQuantityPrecision(self, precision):
@@ -322,65 +304,71 @@ class Simple:
     def GetStep(self):
         return self._parameters[const.PARAMS.STEP]
 
-    # brief: gets sell-profit for current trade-strategy step
-    # return: current sell-profit
-    def GetStepProfit(self):
-        return self._parameters[const.PARAMS.STEP_SELL_PROFIT]
-
     # brief: gets sell-cost for current step
+    # note1: must be redefined in child class
     # return: the sell-cost for current step
     def GetSellCost(self):
-        return self._parameters[const.PARAMS.STEP_SELL_COST]
+        raise error.MethodIsNotImplemented()
 
     # brief: gets sell-rate for current step
+    # note1: must be redefined in child class
     # return: the sell-rate for current step
     def GetSellRate(self):
-        return self._parameters[const.PARAMS.STEP_SELL_RATE]
+        raise error.MethodIsNotImplemented()
 
     # brief: gets quantity for sell-order for current step
+    # note1: must be redefined in child class
     # return: the quantity for sell-order for current step
     def GetSellQuantity(self):
-        return self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
-
-    # brief: gets profit for sell-order for current step
-    # return: the profit for sell-order for current step
-    def GetSellProfit(self):
-        return self._parameters[const.PARAMS.STEP_SELL_PROFIT]
+        raise error.MethodIsNotImplemented()
 
     # brief: gets buy-cost for current step
+    # note1: must be redefined in child class
     # return: the buy-cost for current step
     def GetBuyCost(self):
-        return self._parameters[const.PARAMS.STEP_BUY_COST]
+        raise error.MethodIsNotImplemented()
 
     # brief: gets buy-rate for current step
+    # note1: must be redefined in child class
     # return: the buy-rate for current step
     def GetBuyRate(self):
-        return self._parameters[const.PARAMS.STEP_BUY_RATE]
+        raise error.MethodIsNotImplemented()
 
     # brief: gets buy-quantity for current step
+    # note1: must be redefined in child class
     # return: the buy-quantity for current step
     def GetBuyQuantity(self):
-        return self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
+        raise error.MethodIsNotImplemented()
 
-    # brief: gets total-buy-cost of currency in current-step
-    # return: total-buy-cost in current-step
-    def GetTotalBuyCost(self):
-        return self._parameters[const.PARAMS.INIT_COST]
+    # brief: gets total-activity-cost of currency in current-step
+    # note1: must be redefined in child class
+    # return: total-activity-cost in current-step
+    def GetTotalActivityCost(self):
+        raise error.MethodIsNotImplemented()
 
-    # brief: gets total-everage-buy-rate of currency in current-step
-    # return: total-everage-buy-rate in current-step
-    def GetTotalEverageBuyRate(self):
-        return self._parameters[const.PARAMS.INIT_RATE]
+    # brief: gets total-everage-activity-rate of currency in current-step
+    # note1: must be redefined in child class
+    # return: total-everage-activity-rate in current-step
+    def GetTotalEverageActivityRate(self):
+        raise error.MethodIsNotImplemented()
 
-    # brief: gets difference of rate between last buy-rate and current sell-rate
-    # return: the difference of rate between last buy-rate and current sell-rate
+    # brief: gets sell-profit for current trade-strategy step
+    # note1: must be redefined in child class
+    # return: current sell-profit
+    def GetStepProfit(self):
+        raise error.MethodIsNotImplemented()
+
+    # brief: gets profit for current step
+    # note1: must be redefined in child class
+    # return: the profit
+    def GetProfit(self):
+        raise error.MethodIsNotImplemented()
+
+    # brief: gets difference of rate between last two activity-rate
+    # note1: must be redefined in child class
+    # return: the difference of rate between last two activity-rate
     def GetDifferenceBetweenRate(self):
-        difference_between_rate = None
-        if self._previous_step:
-            difference_between_rate = self._parameters[const.PARAMS.STEP_SELL_RATE] - self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
-        else:
-            difference_between_rate = self._parameters[const.PARAMS.STEP_SELL_RATE] - self._parameters[const.PARAMS.INIT_RATE]
-        return difference_between_rate
+        raise error.MethodIsNotImplemented()
 
     # param: getted full information about current step of the trading-strategy
     # return: full information about trading-strategy
@@ -410,10 +398,6 @@ class Simple:
                 const.INFO.GLOBAL.PROFIT : {
                     const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_PROFIT],
                     const.INFO.DESCRIPTION : "profit realized by the trading-strategy"
-                },
-                const.INFO.GLOBAL.COEFFICIENT : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1],
-                    const.INFO.DESCRIPTION : "initial increase-cost-coefficient"
                 },
                 const.INFO.GLOBAL.VOLUME : {
                     const.INFO.GLOBAL.VOLUME.TOTAL_CLEAN : {
@@ -454,40 +438,44 @@ class Simple:
                     const.INFO.DESCRIPTION : "the difference between last buy-rate and current sell-rate"
                 },
                 const.INFO.STEP.AVERAGE_RATE : {
-                    const.INFO.VALUE : self.GetTotalEverageBuyRate(),
+                    const.INFO.VALUE : self.GetTotalEverageActivityRate(),
                     const.INFO.DESCRIPTION : "total-everage-buy-rate is buy-rate of currency on total-cost at the in current step"
                 },
                 const.INFO.STEP.TOTAL_BUY_COST : {
-                    const.INFO.VALUE : self.GetTotalBuyCost(),
+                    const.INFO.VALUE : self.GetTotalActivityCost(),
                     const.INFO.DESCRIPTION : "total-buy-cost of currency in current step"
                 },
                 const.INFO.STEP.SELL_RATE_0 : {
-                    const.INFO.VALUE : self.ComputeSellRate(self._parameters[const.PARAMS.STEP_SELL_QUANTITY], self._parameters[const.PARAMS.INIT_COST]),
+                    const.INFO.VALUE : self._RP.UpDecimal(self.ComputeSellRate(self._parameters[const.PARAMS.STEP_SELL_QUANTITY], self._parameters[const.PARAMS.INIT_COST])),
                     const.INFO.DESCRIPTION : "currency-rate for sell-order of the current step for zero-loss"
                 },
-                const.INFO.STEP.SELL_RATE : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_SELL_RATE],
-                    const.INFO.DESCRIPTION : "currency-rate for sell-order of the current step"
-                },
-                const.INFO.STEP.TOTAL_SELL_COST : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_SELL_COST],
-                    const.INFO.DESCRIPTION : "total-sell-cost of currency in current step"
-                },
-                const.INFO.STEP.TOTAL_SELL_PROFIT : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_SELL_PROFIT],
+                const.INFO.STEP.SELL_PROFIT : {
+                    const.INFO.VALUE : self.GetProfit(),
                     const.INFO.DESCRIPTION : "total-sell-profit of currency in current step"
                 },
-                const.INFO.STEP.COEFFICIENT : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_COEFFICIENT_1],
-                    const.INFO.DESCRIPTION : "increase-cost-coefficient for buy-order of the current step"
+                const.INFO.STEP.SELL_RATE : {
+                    const.INFO.VALUE : self.GetSellRate(),
+                    const.INFO.DESCRIPTION : "step-sell-rate of currency in current step"
                 },
-                const.INFO.STEP.BUY_COST : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_BUY_COST],
-                    const.INFO.DESCRIPTION : "cost of currency for buy-order of the current step"
+                const.INFO.STEP.SELL_COST : {
+                    const.INFO.VALUE : self.GetSellCost(),
+                    const.INFO.DESCRIPTION : "step-sell-cost of currency in current step"
+                },
+                const.INFO.STEP.SELL_QUANTITY : {
+                    const.INFO.VALUE : self.GetSellQuantity(),
+                    const.INFO.DESCRIPTION : "step-sell-quantity of currency in current step"
                 },
                 const.INFO.STEP.BUY_RATE : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_BUY_RATE],
-                    const.INFO.DESCRIPTION : "currency-rate for buy-order of the current step"
+                    const.INFO.VALUE : self.GetBuyRate(),
+                    const.INFO.DESCRIPTION : "step-buy-rate of currency in current step"
+                },
+                const.INFO.STEP.BUY_COST : {
+                    const.INFO.VALUE : self.GetBuyCost(),
+                    const.INFO.DESCRIPTION : "step-buy-cost of currency in current step"
+                },
+                const.INFO.STEP.BUY_QUANTITY : {
+                    const.INFO.VALUE : self.GetBuyQuantity(),
+                    const.INFO.DESCRIPTION : "step-buy-quantity of currency in current step"
                 },
             },
         }
@@ -568,4 +556,4 @@ class Simple:
     # return: strategy-ID
     @classmethod
     def GetID(cls):
-        return const.ID.Simple
+        return const.ID.StairsBase

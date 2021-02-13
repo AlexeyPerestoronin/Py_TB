@@ -15,13 +15,13 @@ class RCDependency(ss_rc.RCSimple):
             return self._parameters[const.PARAMS.INIT_RATE]
 
     def _ComputeBuyCost(self):
+        ceff1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
         base_cost = None
-        coefficient1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
         if self._previous_step:
             base_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
         else:
             base_cost = self._parameters[const.PARAMS.INIT_COST]
-        self._parameters[const.PARAMS.STEP_BUY_COST] = base_cost * coefficient1
+        self._parameters[const.PARAMS.STEP_BUY_COST] = base_cost * ceff1
 
     @classmethod
     def GetID(cls):
