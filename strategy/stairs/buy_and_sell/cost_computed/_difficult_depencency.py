@@ -1,9 +1,9 @@
 import strategy.const as const
-import strategy.stairs.cost_computed as ss_cc
+import strategy.stairs.buy_and_sell.cost_computed as ss_bs_cc
 
-class CCDifficultDependency(ss_cc.CCDependency):
+class CCDifficultDependency(ss_bs_cc.CCDependency):
     def __init__(self):
-        ss_cc.CCDependency.__init__(self)
+        ss_bs_cc.CCDependency.__init__(self)
 
     def _GetNextSellRate(self):
         base_rate = None

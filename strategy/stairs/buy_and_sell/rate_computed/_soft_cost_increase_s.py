@@ -1,9 +1,9 @@
 import strategy.const as const
-import strategy.stairs.rate_computed  as ss_rc
+import strategy.stairs.buy_and_sell.rate_computed as ss_bs_rc
 
-class RCSoftCostIncreaseS(ss_rc.RCSimple):
+class RCSoftCostIncreaseS(ss_bs_rc.RCSimple):
     def __init__(self):
-        ss_rc.RCSimple.__init__(self)
+        ss_bs_rc.RCSimple.__init__(self)
 
     def _ComputeBuyCost(self):
         current_step_buy_cost = None

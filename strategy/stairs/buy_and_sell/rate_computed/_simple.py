@@ -6,14 +6,14 @@ import decimal
 import common.faf as faf
 import common.precision as c_precision
 
-import strategy.stairs as ss
 import strategy.const as const
 import strategy.const.errors as error
+import strategy.stairs.buy_and_sell as ss_bs
 
 # brief: implements simple rate-computed strairs trade-strategy
-class RCSimple(ss.StairsBuySell):
+class RCSimple(ss_bs.StairsBuySell):
     def __init__(self):
-        ss.StairsBuySell.__init__(self)
+        ss_bs.StairsBuySell.__init__(self)
 
     def _GetNextSellRate(self):
         return self._parameters[const.PARAMS.INIT_RATE]

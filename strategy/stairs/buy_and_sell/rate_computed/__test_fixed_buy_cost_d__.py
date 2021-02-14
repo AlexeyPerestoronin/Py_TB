@@ -12,11 +12,11 @@ import common.algorithms as alg
 import strategy.const as const
 
 from strategy.stairs.__test_Strairs__ import Test_Srairs
-from strategy.stairs.rate_computed import RCSimple
+from strategy.stairs.buy_and_sell.rate_computed import RCFixedBuyCostD
 
 class StandartStrategy(unittest.TestCase):
     def setUp(self):
-        self._stairs = RCSimple()
+        self._stairs = RCFixedBuyCostD()
         self._stairs.SetAvailableCurrency("200000")
         self._stairs.SetCommissionBuy("0.996")
         self._stairs.SetCommissionSell("0.996")
@@ -43,33 +43,33 @@ class StandartStrategy(unittest.TestCase):
 
 class Test1_ID(unittest.TestCase):
     def test_GetID(self):
-        self.assertEqual(RCSimple.GetID(), const.ID.RCSimple)
+        self.assertEqual(RCFixedBuyCostD.GetID(), const.ID.RCFixedBuyCostD)
 
 class Test2_save_and_restore_from_string(StandartStrategy):
     def test1(self):
         self._stairs = self._stairs.ComputeToStep(3)
         self._stairs = self._stairs.ComputeToStep(2)
         recovery_string = self._stairs.CreateRecoveryString()
-        restore_stairs = RCSimple.RestoreFromRecoveryString(recovery_string)
+        restore_stairs = RCFixedBuyCostD.RestoreFromRecoveryString(recovery_string)
         self.CompareTwoStrategy(self._stairs, restore_stairs)
 
     def test2(self):
         self._stairs = self._stairs.ComputeToStep(3)
         self._stairs = self._stairs.ComputeToStep(6)
         recovery_string = self._stairs.CreateRecoveryString()
-        restore_stairs = RCSimple.RestoreFromRecoveryString(recovery_string)
+        restore_stairs = RCFixedBuyCostD.RestoreFromRecoveryString(recovery_string)
         self.CompareTwoStrategy(self._stairs, restore_stairs)
 class Test3_save_and_restore_from_file(StandartStrategy):
     def setUp(self):
         StandartStrategy.setUp(self)
-        self._save_filepath = os.path.join(faf.SplitPath1(sys.argv[0]), "stairs-RCSimple.save_file.log")
+        self._save_filepath = os.path.join(faf.SplitPath1(sys.argv[0]), "stairs-RCFixedBuyCostD.save_file.log")
 
     def test1(self):
         filepath = os.path.join(faf.SplitPath1(sys.argv[0]), self._save_filepath)
         self._stairs = self._stairs.ComputeToStep(3)
         self._stairs = self._stairs.ComputeToStep(2)
         self._stairs.SaveToFile(filepath)
-        restore_stairs = RCSimple.RestoreFromFile(filepath)
+        restore_stairs = RCFixedBuyCostD.RestoreFromFile(filepath)
         self.CompareTwoStrategy(self._stairs, restore_stairs)
 
     def test2(self):
@@ -77,7 +77,7 @@ class Test3_save_and_restore_from_file(StandartStrategy):
         self._stairs = self._stairs.ComputeToStep(3)
         self._stairs = self._stairs.ComputeToStep(6)
         self._stairs.SaveToFile(filepath)
-        restore_stairs = RCSimple.RestoreFromFile(filepath)
+        restore_stairs = RCFixedBuyCostD.RestoreFromFile(filepath)
         self.CompareTwoStrategy(self._stairs, restore_stairs)
 
     def tearDown(self):
@@ -85,7 +85,7 @@ class Test3_save_and_restore_from_file(StandartStrategy):
 
 class Test5_StairsSoftCostIncreaseDS2(unittest.TestCase, Test_Srairs):
     def setUp(self):
-        Test_Srairs.__init__(self, RCSimple(), "RCSimple.log")
+        Test_Srairs.__init__(self, RCFixedBuyCostD(), "RCFixedBuyCostD.log")
         self._stairs.SetAvailableCurrency("1400")
         self._stairs.SetCommissionBuy("1")
         self._stairs.SetCommissionSell("1")
@@ -94,7 +94,7 @@ class Test5_StairsSoftCostIncreaseDS2(unittest.TestCase, Test_Srairs):
         self._stairs.SetRatePrecision("4")
         self._stairs.SetQuantityPrecision("8")
         self._stairs.SetProfit("1.003")
-        self._stairs.Init("1400", "10")
+        self._stairs.Init("1400", "100")
 
 if __name__ == "__main__":
     unittest.main()
