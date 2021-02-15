@@ -11,7 +11,7 @@ import strategy.const.errors as error
 import strategy.stairs.buy_and_sell as ss_bs
 
 # brief: implements simple rate-computed strairs trade-strategy
-class RCSimple(ss_bs.StairsBuySell):
+class BsRcSimple(ss_bs.StairsBuySell):
     def __init__(self):
         ss_bs.StairsBuySell.__init__(self)
 
@@ -35,7 +35,7 @@ class RCSimple(ss_bs.StairsBuySell):
         self._parameters[const.PARAMS.STEP_SELL_RATE] = self.ComputeSellRate(total_buy_quantity, total_buy_cost * profit)
 
     def _ComputeSellQuantity(self):
-        total_buy_quantity = self._statistic[const.INFO.GLOBAL.VOLUME][const.INFO.GLOBAL.VOLUME.TOTAL_REAL]
+        total_buy_quantity = self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_REAL]
         self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = total_buy_quantity
 
     def _ComputeBuyCost(self):
@@ -44,7 +44,7 @@ class RCSimple(ss_bs.StairsBuySell):
         self._parameters[const.PARAMS.STEP_BUY_COST] = total_buy_cost * ceff_1
 
     def _ComputeBuyRate(self):
-        sell_rate = self._GetNextSellRate()
+        base_sell_rate = self._GetNextSellRate()
         self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= self._parameters[const.PARAMS.STEP_BUY_COST]
         if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] < 0.:
             raising_error = error.ExceededAvailableCurrency()
@@ -52,13 +52,13 @@ class RCSimple(ss_bs.StairsBuySell):
             raising_error.SetSellCost(self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_COST]))
             raising_error.SetSellRate(self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE]))
             raise raising_error
-        global_sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
-        global_buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
-        global_sell_profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
+        profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
         total_sell_cost = self._parameters[const.PARAMS.INIT_COST] + self._parameters[const.PARAMS.STEP_BUY_COST]
         step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
         step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
-        step_buy_rate = - (step_buy_cost * global_buy_commission) / (step_sell_quantity - ((global_sell_profit * total_sell_cost) / (sell_rate * global_sell_commission)))
+        step_buy_rate = - (step_buy_cost * buy_commission) / (step_sell_quantity - ((profit * total_sell_cost) / (base_sell_rate * sell_commission)))
         if step_buy_rate <= 0.:
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = step_buy_rate
@@ -81,4 +81,4 @@ class RCSimple(ss_bs.StairsBuySell):
 
     @classmethod
     def GetID(cls):
-        return const.ID.RCSimple
+        return const.ID.BsRcSimple

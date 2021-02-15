@@ -2,9 +2,9 @@ import strategy.const as const
 import strategy.const.errors as error
 import strategy.stairs.buy_and_sell.rate_computed as ss_bs_rc
 
-class CCSimple(ss_bs_rc.RCSimple):
+class BsCcSimple(ss_bs_rc.BsRcSimple):
     def __init__(self):
-        ss_bs_rc.RCSimple.__init__(self)
+        ss_bs_rc.BsRcSimple.__init__(self)
 
     def _ComputeBuyCost(self):
         sell_rate = self._GetNextSellRate()
@@ -56,4 +56,4 @@ class CCSimple(ss_bs_rc.RCSimple):
 
     @classmethod
     def GetID(cls):
-        return const.ID.CCSimple
+        return const.ID.BsCcSimple

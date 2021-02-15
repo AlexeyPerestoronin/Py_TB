@@ -1,9 +1,9 @@
 import strategy.const as const
 import strategy.stairs.buy_and_sell.cost_computed as ss_bs_cc
 
-class CCDifficultDependency(ss_bs_cc.CCDependency):
+class BsCcDifficultDependency(ss_bs_cc.BsCcDependency):
     def __init__(self):
-        ss_bs_cc.CCDependency.__init__(self)
+        ss_bs_cc.BsCcDependency.__init__(self)
 
     def _GetNextSellRate(self):
         base_rate = None
@@ -17,4 +17,4 @@ class CCDifficultDependency(ss_bs_cc.CCDependency):
 
     @classmethod
     def GetID(cls):
-        return const.ID.CCDifficultDependency
+        return const.ID.BsCcDifficultDependency

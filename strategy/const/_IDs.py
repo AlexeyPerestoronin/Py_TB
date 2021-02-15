@@ -3,14 +3,18 @@ class ID:
     StairsBase = "StairsBase"
     StairsSellBuy = "StairsSellBuy"
     StairsBuySell = "StairsBuySell"
+    # NOTE: buy-sell
     # NOTE: RC...
-    RCSimple = "RCSimple"
-    RCDependency = "RCDependency"
-    RCFixedBuyCostS = "RCFixedBuyCostS"
-    RCFixedBuyCostD = "RCFixedBuyCostD"
-    RCSoftCostIncreaseS = "RCSoftCostIncreaseS"
-    RCSoftCostIncreaseD = "RCSoftCostIncreaseD"
+    BsRcSimple = "BsRcSimple"
+    BsRcDependency = "BsRcDependency"
+    BsRcFixedBuyCostS = "BsRcFixedBuyCostS"
+    BsRcFixedBuyCostD = "BsRcFixedBuyCostD"
+    BsRcSoftCostIncreaseS = "BsRcSoftCostIncreaseS"
+    BsRcSoftCostIncreaseD = "BsRcSoftCostIncreaseD"
     # NOTE: CC...
-    CCSimple = "CCSimple"
-    CCDependency = "CCDependency"
-    CCDifficultDependency = "CCDifficultDependency"
+    BsCcSimple = "BsCcSimple"
+    BsCcDependency = "BsCcDependency"
+    BsCcDifficultDependency = "BsCcDifficultDependency"
+    # NOTE: sell-buy
+    # NOTE: RC...
+    SbRcSimple = "SbRcSimple"

@@ -9,24 +9,24 @@ def DefineStrategy(id):
     if id == const.ID.Simple:
         return ss.Simple()
     # NOTE: RC...
-    elif id == const.ID.RCSimple:
-        return ss.rate_computed.RCSimple()
-    elif id == const.ID.RCDependency:
-        return ss.rate_computed.RCDependency()
-    elif id == const.ID.RCFixedBuyCostS:
-        return ss.rate_computed.RCFixedBuyCostS()
-    elif id == const.ID.RCFixedBuyCostD:
-        return ss.rate_computed.RCFixedBuyCostD()
-    elif id == const.ID.RCSoftCostIncreaseS:
-        return ss.rate_computed.RCSoftCostIncreaseS()
-    elif id == const.ID.RCSoftCostIncreaseD:
-        return ss.rate_computed.RCSoftCostIncreaseD()
+    elif id == const.ID.BsRcSimple:
+        return ss.rate_computed.BsRcSimple()
+    elif id == const.ID.BsRcDependency:
+        return ss.rate_computed.BsRcDependency()
+    elif id == const.ID.BsRcFixedBuyCostS:
+        return ss.rate_computed.BsRcFixedBuyCostS()
+    elif id == const.ID.BsRcFixedBuyCostD:
+        return ss.rate_computed.BsRcFixedBuyCostD()
+    elif id == const.ID.BsRcSoftCostIncreaseS:
+        return ss.rate_computed.BsRcSoftCostIncreaseS()
+    elif id == const.ID.BsRcSoftCostIncreaseD:
+        return ss.rate_computed.BsRcSoftCostIncreaseD()
     # NOTE:CC...
-    elif id == const.ID.CCSimple:
-        return ss.cost_computed.CCSimple()
-    elif id == const.ID.CCDependency:
-        return ss.cost_computed.CCDependency()
-    elif id == const.ID.CCDifficultDependency:
-        return ss.cost_computed.CCDifficultDependency()
+    elif id == const.ID.BsCcSimple:
+        return ss.cost_computed.BsCcSimple()
+    elif id == const.ID.BsCcDependency:
+        return ss.cost_computed.BsCcDependency()
+    elif id == const.ID.BsCcDifficultDependency:
+        return ss.cost_computed.BsCcDifficultDependency()
     else:
         raise error.UndefinedStrategyID()

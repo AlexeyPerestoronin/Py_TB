@@ -1,9 +1,9 @@
 import strategy.const as const
 import strategy.stairs.buy_and_sell.rate_computed as ss_bs_rc
 
-class RCSoftCostIncreaseS(ss_bs_rc.RCSimple):
+class BsRcSoftCostIncreaseS(ss_bs_rc.BsRcSimple):
     def __init__(self):
-        ss_bs_rc.RCSimple.__init__(self)
+        ss_bs_rc.BsRcSimple.__init__(self)
 
     def _ComputeBuyCost(self):
         current_step_buy_cost = None
@@ -17,4 +17,4 @@ class RCSoftCostIncreaseS(ss_bs_rc.RCSimple):
 
     @classmethod
     def GetID(cls):
-        return const.ID.RCSoftCostIncreaseS
+        return const.ID.BsRcSoftCostIncreaseS

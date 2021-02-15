@@ -8,7 +8,7 @@ class INFO:
         PROFIT = "profit"
         PRICE_PRECISION = "price_precision"
         QUANTITY_PRECISION = "quantity_precision"
-        class VOLUME:
+        class QUANTITY:
             TOTAL_CLEAN = "total_clean"
             TOTAL_REAL = "total_real"
             TOTAL_LOST = "total_lost"
@@ -19,16 +19,18 @@ class INFO:
     class STEP:
         AVAILABLE_CURRENCY = "available_currency"
         DIFFERENCE_RATE = "difference_rate"
-        AVERAGE_RATE = "average_rate"
-        TOTAL_BUY_COST = "total_buy_cost"
-        SELL_RATE_0 = "sell_rate_0"
-        SELL_PROFIT = "step_sell_profit"
+        TOTAL_ACTIVITY_COST = "total_activity_cost"
+        TOTAL_EVERAGE_AVERAGE_RATE = "total_everage_average_rate"
         SELL_RATE = "step_sell_rate"
         SELL_COST = "step_sell_cost"
         SELL_QUANTITY = "step_sell_quantity"
+        BUY_RATE_0 = "buy_rate_0"
+        BUY_PROFIT = "step_buy_profit"
         BUY_RATE = "step_buy_rate"
         BUY_COST = "step_buy_cost"
         BUY_QUANTITY = "step_buy_quantity"
+        PROFIT_ZERO = "profit_zero"
+        PROFIT_EXPECTED = "profit_expected"
         class SUBINFO:
             SUBSTEP = "substep"
             DIFF_RATE = "substep_difference_rate"
