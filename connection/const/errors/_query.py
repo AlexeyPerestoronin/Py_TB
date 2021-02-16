@@ -20,3 +20,10 @@ class InsufficientFundsForOrder(QueryError):
         QueryError.__init__(self)
     def __str__(self):
         return "insufficient funds for order"
+
+# brief: maintenance work in progres
+class MaintenanceWorkInProgres(QueryError):
+    def __init__(self):
+        QueryError.__init__(self)
+    def __str__(self):
+        return "maintenance work in progres"
