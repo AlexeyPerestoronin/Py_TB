@@ -12,10 +12,12 @@ class INFO:
             TOTAL_CLEAN = "total_clean"
             TOTAL_REAL = "total_real"
             TOTAL_LOST = "total_lost"
+            TOTAL_CONCESSION = "total_concession"
         class COST:
             TOTAL_CLEAN = "total_clean"
             TOTAL_REAL = "total_real"
             TOTAL_LOST = "total_lost"
+            TOTAL_CONCESSION = "total_concession"
     class STEP:
         AVAILABLE_CURRENCY = "available_currency"
         DIFFERENCE_RATE = "difference_rate"
@@ -30,7 +32,8 @@ class INFO:
         BUY_COST = "step_buy_cost"
         BUY_QUANTITY = "step_buy_quantity"
         PROFIT_ZERO = "profit_zero"
-        PROFIT_EXPECTED = "profit_expected"
+        PROFIT_EXPECTED_LEFT = "profit_expected_left"
+        PROFIT_EXPECTED_RIGHT = "profit_expected_right"
         class SUBINFO:
             SUBSTEP = "substep"
             DIFF_RATE = "substep_difference_rate"

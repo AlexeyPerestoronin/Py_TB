@@ -58,7 +58,7 @@ class Simple:
 
     def _GetStrategyProfit(self):
         if self._strategy.IsInitialized():
-            return self._strategy.GetStepProfit()
+            return self._strategy.GetStepProfitLeft()
         raise s_const.errors.NotInitializedStrategy()
 
     def _GetOrderTrueview(self, order_id):

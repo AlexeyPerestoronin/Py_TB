@@ -65,7 +65,7 @@ class CommonParams:
         return strategy.StrategyPreview(self._strategy).GetPreview()
 
     def _GetStrategyProfit(self):
-        return self._strategy.GetStepProfit()
+        return self._strategy.GetStepProfitLeft()
 
     def setUp(self):
         # strategy

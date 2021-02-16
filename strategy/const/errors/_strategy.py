@@ -19,6 +19,13 @@ class UndefinedStrategy(Strategy):
     def __str__(self):
         return "strategy is undefined"
 
+# brief: strategy-id is forbidden to use
+class UseForbiddenStrategyID(Strategy):
+    def __init__(self):
+        Strategy.__init__(self)
+    def __str__(self):
+        return "strategy-id is forbidden to use"
+
 # brief: exception of undefined strategy-id
 class UndefinedStrategyID(Strategy):
     def __init__(self):

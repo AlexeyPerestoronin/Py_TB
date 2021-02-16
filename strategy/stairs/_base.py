@@ -62,15 +62,17 @@ class StairsBase:
             const.PARAMS.STEP_BUY_QUANTITY : None,
         }
         self._statistic = {
-            const.INFO.GLOBAL.QUANTITY : {
-                const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN : 0,
-                const.INFO.GLOBAL.QUANTITY.TOTAL_REAL : 0,
-                const.INFO.GLOBAL.QUANTITY.TOTAL_LOST : 0,
-            },
             const.INFO.GLOBAL.COST : {
-                const.INFO.GLOBAL.COST.TOTAL_CLEAN : 0,
-                const.INFO.GLOBAL.COST.TOTAL_REAL : 0,
-                const.INFO.GLOBAL.COST.TOTAL_LOST : 0,
+                const.INFO.GLOBAL.COST.TOTAL_CLEAN : _d(0),
+                const.INFO.GLOBAL.COST.TOTAL_REAL : _d(0),
+                const.INFO.GLOBAL.COST.TOTAL_LOST : _d(0),
+                const.INFO.GLOBAL.COST.TOTAL_CONCESSION : _d(0),
+            },
+            const.INFO.GLOBAL.QUANTITY : {
+                const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN : _d(0),
+                const.INFO.GLOBAL.QUANTITY.TOTAL_REAL : _d(0),
+                const.INFO.GLOBAL.QUANTITY.TOTAL_LOST : _d(0),
+                const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION : _d(0),
             }
         }
         # precision(s)
@@ -382,16 +384,28 @@ class StairsBase:
     def GetTotalEverageActivityRate(self):
         raise error.MethodIsNotImplemented()
     
-    # brief: gets sell-profit for current trade-strategy step
+    # brief: gets profit for current trade-strategy step in left currency
     # note1: must be redefined in child class
-    # return: current sell-profit
-    def GetStepProfit(self):
+    # return: current profit
+    def GetStepProfitLeft(self):
         raise error.MethodIsNotImplemented()
 
-    # brief: gets profit for current step
+    # brief: gets profit for current trade-strategy step in right currency
+    # note1: must be redefined in child class
+    # return: current profit
+    def GetStepProfitRight(self):
+        raise error.MethodIsNotImplemented()
+
+    # brief: gets profit for current strategy in left currency
     # note1: must be redefined in child class
     # return: the profit
-    def GetProfit(self):
+    def GetProfitLeft(self):
+        raise error.MethodIsNotImplemented()
+    
+    # brief: gets profit for current strategy in right currency
+    # note1: must be redefined in child class
+    # return: the profit
+    def GetProfitRight(self):
         raise error.MethodIsNotImplemented()
 
     # brief: gets difference of rate between last two activity-rate
@@ -432,15 +446,19 @@ class StairsBase:
                 const.INFO.GLOBAL.QUANTITY : {
                     const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN],
-                        const.INFO.DESCRIPTION : "total-clean(without commission)-bought-volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-clean volume of currency at the beggining of the current step"
                     },
                     const.INFO.GLOBAL.QUANTITY.TOTAL_REAL : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_REAL],
-                        const.INFO.DESCRIPTION : "total-real(with commission)-bought-volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-real volume of currency at the beggining of the current step"
                     },
                     const.INFO.GLOBAL.QUANTITY.TOTAL_LOST : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_LOST],
-                        const.INFO.DESCRIPTION : "total-lost(by commission)-volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-lost volume of currency at the beggining of the current step"
+                    },
+                    const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION : {
+                        const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION],
+                        const.INFO.DESCRIPTION : "total-concession of commission for volume of currency at the beggining of the current step"
                     },
                 },
                 const.INFO.GLOBAL.COST : {
@@ -455,6 +473,10 @@ class StairsBase:
                     const.INFO.GLOBAL.COST.TOTAL_LOST : {
                         "value" : self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST],
                         "description" : "losted cost at the current trading-strategy step"
+                    },
+                    const.INFO.GLOBAL.COST.TOTAL_CONCESSION : {
+                        "value" : self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CONCESSION],
+                        "description" : "concession cost at the current trading-strategy step"
                     },
                 },
             },
@@ -475,9 +497,13 @@ class StairsBase:
                     const.INFO.VALUE : self.GetTotalEverageActivityRate(),
                     const.INFO.DESCRIPTION : "total-everage-activity-rate for total-cost at the in current step"
                 },
-                const.INFO.STEP.PROFIT_EXPECTED : {
-                    const.INFO.VALUE : self.GetProfit(),
-                    const.INFO.DESCRIPTION : "total-sell-profit of currency in current step"
+                const.INFO.STEP.PROFIT_EXPECTED_LEFT : {
+                    const.INFO.VALUE : self.GetProfitLeft(),
+                    const.INFO.DESCRIPTION : "total-profit for left currency for the strategy"
+                },
+                const.INFO.STEP.PROFIT_EXPECTED_RIGHT : {
+                    const.INFO.VALUE : self.GetProfitRight(),
+                    const.INFO.DESCRIPTION : "total-profit for left currency for the strategy"
                 },
                 const.INFO.STEP.SELL_RATE : {
                     const.INFO.VALUE : self.GetSellRate(),

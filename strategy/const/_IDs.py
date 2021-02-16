@@ -18,3 +18,4 @@ class ID:
     # NOTE: sell-buy
     # NOTE: RC...
     SbRcSimple = "SbRcSimple"
+    SbRcFixedSellQuantityS = "SbRcFixedSellQuantityS"

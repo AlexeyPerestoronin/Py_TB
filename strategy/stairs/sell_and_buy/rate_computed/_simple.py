@@ -24,24 +24,14 @@ class SbRcSimple(ss_sb.StairsSellBuy):
         self._parameters[const.PARAMS.STEP_SELL_COST] = step_sell_quantity * step_sell_rate
 
     def _ComputeSellRate(self):
-        # Rb
         base_buy_rate = self._GetNextBuyRate()
-        # Kp
         profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
-        # Keb
         buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
-        # Kes
         sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
-        # Q3
         step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
-        # Q1+Q2+Q3
         total_sell_quantity = self._parameters[const.PARAMS.INIT_QUANTITY] + step_sell_quantity
-        # C1+C2
         realized_sell_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
-
         step_sell_rate = (base_buy_rate * (profit * total_sell_quantity - (buy_commission * realized_sell_cost / base_buy_rate))) / (buy_commission * sell_commission * step_sell_quantity)
-        # if step_sell_rate <= 0.:
-        #     raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_SELL_RATE] = step_sell_rate
 
     def _ComputeSellQuantity(self):

@@ -13,6 +13,7 @@ class StairsBuySell(ss.StairsBase):
         total_buy_cost = None
         total_buy_rate = None
         buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        buy_commission_concession = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION]
         if not self._previous_step:
             total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
             total_buy_rate = self._parameters[const.PARAMS.INIT_RATE]
@@ -23,9 +24,11 @@ class StairsBuySell(ss.StairsBase):
         clean_quantity = total_buy_cost / total_buy_rate
         real_quantity = clean_quantity * buy_commission
         lost_quantity = clean_quantity - real_quantity
+        total_concession_quantity = lost_quantity * buy_commission_concession
         self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN] += clean_quantity
         self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_REAL] += real_quantity
         self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_LOST] += lost_quantity
+        self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION] += total_concession_quantity
         # collection of statistics (cost)
         self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CLEAN] += total_buy_cost
         self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_REAL] += real_quantity * total_buy_rate
@@ -76,11 +79,24 @@ class StairsBuySell(ss.StairsBase):
     def GetTotalEverageActivityRate(self):
         return self._RP.UpDecimal(self._parameters[const.PARAMS.INIT_RATE])
 
-    def GetStepProfit(self):
-        return self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_PROFIT])
+    def GetStepProfitLeft(self):
+        return self._CP.DownDecimal(self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION])
 
-    def GetProfit(self):
-        return self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_PROFIT])
+    def GetStepProfitRight(self):
+        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
+        sell_commission_concession = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION]
+        not_commission_profit = self._parameters[const.PARAMS.STEP_SELL_PROFIT]
+        not_commission_expected_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
+        full_commission = (not_commission_expected_sell_quantity / sell_commission) - not_commission_expected_sell_quantity
+        commission_concession = full_commission * sell_commission_concession
+        step_profit_right = not_commission_profit + commission_concession
+        return self._CP.DownDecimal(step_profit_right)
+
+    def GetProfitLeft(self):
+        return self.GetStepProfitLeft()
+
+    def GetProfitRight(self):
+        return self.GetStepProfitRight()
 
     def GetDifferenceBetweenRate(self):
         last_buy_rate = None

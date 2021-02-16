@@ -38,18 +38,20 @@ class StrategyPreview:
                 with PreviewLogger([]) as _:
                     key = s_const.INFO.GLOBAL
                     i_global = info[key]
-                    with PreviewLogger("Volume:") as sub_sub_logger:
+                    with PreviewLogger("Quantity:") as sub_sub_logger:
                         subkey = key.QUANTITY
                         i_global_volume = i_global[subkey]
-                        sub_sub_logger.LogResult("total = {}", i_global_volume[subkey.TOTAL_CLEAN])
-                        sub_sub_logger.LogResult("real  = {}", i_global_volume[subkey.TOTAL_REAL])
-                        sub_sub_logger.LogResult("lost  = {}", i_global_volume[subkey.TOTAL_LOST])
+                        sub_sub_logger.LogResult("total       = {}", i_global_volume[subkey.TOTAL_CLEAN])
+                        sub_sub_logger.LogResult("real        = {}", i_global_volume[subkey.TOTAL_REAL])
+                        sub_sub_logger.LogResult("lost        = {}", i_global_volume[subkey.TOTAL_LOST])
+                        sub_sub_logger.LogResult("concession  = {}", i_global_volume[subkey.TOTAL_CONCESSION])
                     with PreviewLogger("Cost:") as sub_sub_logger:
                         subkey = key.COST
                         i_global_cost = i_global[subkey]
-                        sub_sub_logger.LogResult("total = {}", i_global_cost[subkey.TOTAL_CLEAN])
-                        sub_sub_logger.LogResult("real  = {}", i_global_cost[subkey.TOTAL_REAL])
-                        sub_sub_logger.LogResult("lost  = {}", i_global_cost[subkey.TOTAL_LOST])
+                        sub_sub_logger.LogResult("total       = {}", i_global_cost[subkey.TOTAL_CLEAN])
+                        sub_sub_logger.LogResult("real        = {}", i_global_cost[subkey.TOTAL_REAL])
+                        sub_sub_logger.LogResult("lost        = {}", i_global_cost[subkey.TOTAL_LOST])
+                        sub_sub_logger.LogResult("concession  = {}", i_global_cost[subkey.TOTAL_CONCESSION])
                 with PreviewLogger([]) as sub_logger:
                     key = s_const.INFO.STEP
                     i_step = info[key]
@@ -57,7 +59,8 @@ class StrategyPreview:
                     sub_logger.LogInfo("available currency    = {}", i_step[key.AVAILABLE_CURRENCY])
                     sub_logger.LogInfo("total buy cost        = {}", i_step[key.TOTAL_ACTIVITY_COST])
                     sub_logger.LogInfo("average rate          = {}", i_step[key.TOTAL_EVERAGE_AVERAGE_RATE])
-                    sub_logger.LogInfo("expected profit       = {}", i_step[key.PROFIT_EXPECTED])
+                    sub_logger.LogInfo("expected profit left  = {}", i_step[key.PROFIT_EXPECTED_LEFT])
+                    sub_logger.LogInfo("expected profit right = {}", i_step[key.PROFIT_EXPECTED_RIGHT])
                     sub_logger.LogInfo("sell rate             = {}", i_step[key.SELL_RATE])
                     sub_logger.LogInfo("sell cost             = {}", i_step[key.SELL_COST])
                     sub_logger.LogInfo("sell quantity         = {}", i_step[key.SELL_QUANTITY])
