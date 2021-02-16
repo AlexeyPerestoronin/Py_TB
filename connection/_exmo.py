@@ -392,6 +392,10 @@ class Exmo():
                 error = c_errors.OrderIsNotFoundByID()
             elif "Error 50052" in error_message:
                 error = c_errors.InsufficientFundsForOrder()
+            elif "Error 40016" in error_message:
+                error = c_errors.MaintenanceWorkInProgres()
+                # NOTE: in this case it is reasonable to wait at least one minute
+                time.sleep(60)
             else:
                 error = c_errors.QueryError()
                 error.SetDescription(error_message)
