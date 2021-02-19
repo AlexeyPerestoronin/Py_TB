@@ -3,8 +3,8 @@ import sys
 import time
 import json
 
-import trader as t
-import trader.const as t_const
+import trader
+import trader.consts as trader_const
 import strategy as s
 import connection as c
 import common.faf as faf
@@ -13,21 +13,22 @@ def ReadSettings():
     return json.loads(faf.GetFileContent("settings.json"))
 
 def CreateExchangeConnector(settings):
+    connection_setting = settings[trader_const.SETTINGS.CONNECTION.Key]
     connector = c.Exmo()
-    connector.SetPublickKey(faf.GetFileContent(settings[t_const.Params.PUBLIC_KEY]))
-    connector.SetSecretKey(bytes(faf.GetFileContent(settings[t_const.Params.SECRET_KEY]), encoding="utf-8"))
-    connector.SetTakerCommissionPromotion(settings[t_const.Params.TAKER_COMMISSION_PROMOTION])
-    connector.SetMakerCommissionPromotion(settings[t_const.Params.MAKER_COMMISSION_PROMOTION])
+    connector.SetPublickKey(faf.GetFileContent(connection_setting[trader_const.SETTINGS.CONNECTION.PUBLIC_KEY.Key]))
+    connector.SetSecretKey(bytes(faf.GetFileContent(connection_setting[trader_const.SETTINGS.CONNECTION.SECRET_KEY.Key]), encoding="utf-8"))
+    connector.SetTakerCommissionPromotion(connection_setting[trader_const.SETTINGS.CONNECTION.TAKER_COMMISSION_PROMOTION.Key])
+    connector.SetMakerCommissionPromotion(connection_setting[trader_const.SETTINGS.CONNECTION.MAKER_COMMISSION_PROMOTION.Key])
     return connector
 
 def CreateTraders(settings, connector):
-    traders = []
-    for trading_setting in settings["tradings"]:
-        trader = t.Simple()
-        trader.SetConnection(connector)
-        trader.SetParameters(trading_setting)
-        traders.append(trader)
-    return traders
+    all_traders = []
+    for trading_setting in settings[trader_const.SETTINGS.TRADERS.Key]:
+        new_trader = trader.BuyAndSell()
+        new_trader.SetConnection(connector)
+        new_trader.SetParameters(trading_setting)
+        all_traders.append(new_trader)
+    return all_traders
 
 def main():
     settings = ReadSettings()

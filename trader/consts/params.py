@@ -3,11 +3,12 @@ from common import CREATE_CONSTANT as CC
 
 # brief: class collects all key-values for access to fields in launch-parameters
 class SETTINGS(metaclass=C("PARAMS")):
-    PUBLIC_KEY = CC("PUBLIC_KEY")
-    SECRET_KEY = CC("SECRET_KEY")
-    TAKER_COMMISSION_PROMOTION = CC("TAKER_COMMISSION_PROMOTION")
-    MAKER_COMMISSION_PROMOTION = CC("MAKER_COMMISSION_PROMOTION")
-    class TRADING(metaclass=C("TRADING")):
+    class CONNECTION(metaclass=C("CONNECTION")):
+        PUBLIC_KEY = CC("PUBLIC_KEY")
+        SECRET_KEY = CC("SECRET_KEY")
+        TAKER_COMMISSION_PROMOTION = CC("TAKER_COMMISSION_PROMOTION")
+        MAKER_COMMISSION_PROMOTION = CC("MAKER_COMMISSION_PROMOTION")
+    class TRADERS(metaclass=C("TRADERS")):
         PAIR = CC("PAIR")
         INIT_COST = CC("INIT_COST")
         DB_FILENAME = CC("DB_FILENAME")

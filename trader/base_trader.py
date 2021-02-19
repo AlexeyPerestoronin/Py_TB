@@ -63,18 +63,18 @@ class BaseSTrader:
 
     # brief: initialize trader settings
     def _InitTraderSettings(self):
-        self._pair = self._trading_params[trader_const.SETTINGS.TRADING.PAIR.Key]
-        self._init_cost = self._trading_params[trader_const.SETTINGS.TRADING.INIT_COST.Key]
-        self._db_filename = self._trading_params[trader_const.SETTINGS.TRADING.DB_FILENAME.Key]
-        self._save_catalog = self._trading_params[trader_const.SETTINGS.TRADING.SAVE_CATALOG.Key]
+        self._pair = self._trading_params[trader_const.SETTINGS.TRADERS.PAIR.Key]
+        self._init_cost = self._trading_params[trader_const.SETTINGS.TRADERS.INIT_COST.Key]
+        self._db_filename = self._trading_params[trader_const.SETTINGS.TRADERS.DB_FILENAME.Key]
+        self._save_catalog = self._trading_params[trader_const.SETTINGS.TRADERS.SAVE_CATALOG.Key]
 
     # brief: preinitialize trade-strategy
     def _PreinitStrategy(self):
-        strategy_settings = self._trading_params[trader_const.SETTINGS.TRADING.STRATEGY.Key]
-        strategy_id = strategy_settings[trader_const.SETTINGS.TRADING.STRATEGY.ID.Key]
+        strategy_settings = self._trading_params[trader_const.SETTINGS.TRADERS.STRATEGY.Key]
+        strategy_id = strategy_settings[trader_const.SETTINGS.TRADERS.STRATEGY.ID.Key]
         self._strategy = strategy.DefineStrategy(strategy_id)
         self._CheckStrategyClass()
-        strategy_initial_parameters = strategy_settings[trader_const.SETTINGS.TRADING.STRATEGY.PARAMS.Key]
+        strategy_initial_parameters = strategy_settings[trader_const.SETTINGS.TRADERS.STRATEGY.PARAMS.Key]
         self._strategy.SetAllParametersFromDict(strategy_initial_parameters)
         quantity_precision = self._connection.GetQuantityPrecisionForPair(self._pair)
         self._strategy.SetQuantityPrecision(quantity_precision)
@@ -99,11 +99,11 @@ class BaseSTrader:
 
     # brief: initialize completed-policy
     def _InitCP(self):
-        completed_policy_settings = self._trading_params[trader_const.SETTINGS.TRADING.COMPLETED_POLICY.Key]
-        completed_policy_id = completed_policy_settings[trader_const.SETTINGS.TRADING.COMPLETED_POLICY.ID.Key]
+        completed_policy_settings = self._trading_params[trader_const.SETTINGS.TRADERS.COMPLETED_POLICY.Key]
+        completed_policy_id = completed_policy_settings[trader_const.SETTINGS.TRADERS.COMPLETED_POLICY.ID.Key]
         self._completed_policy = trader_cp.DefineCompletePolicy(completed_policy_id)
         self._CheckCompletedPolicyClass()
-        completed_policy_params = completed_policy_settings[trader_const.SETTINGS.TRADING.COMPLETED_POLICY.PARAMS.Key]
+        completed_policy_params = completed_policy_settings[trader_const.SETTINGS.TRADERS.COMPLETED_POLICY.PARAMS.Key]
         self._completed_policy.SetAllParametersFromDict(completed_policy_params)
         self._completed_policy.Init()
 

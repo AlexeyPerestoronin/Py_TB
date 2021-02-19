@@ -7,30 +7,26 @@
     },
     "TRADERS" : [
         {
-            "ID" : "1-SoftCostIncreaseDS",
-            "PAIR" : "ETH_USDT",
-            "INIT_COST" : 100,
+            "ID" : "1-BsRcSoftCostIncreaseS",
+            "PAIR" : "ETH_USD",
+            "INIT_COST" : "15",
             "DB_FILENAME" : "st.sqlite",
             "SAVE_CATALOG" : ".trading",
             "COMPLETED_POLICY" : {
-                "ID" : "FIXED_COMPLETED_STRATEGY",
+                "ID" : "InfinityCP",
                 "PARAMS" : {
                     "STOP_TRIGGER" : 100
                 }
             },
             "STRATEGY" : {
-                "ID" : "SOFT_COST_INCREASE_D",
+                "ID" : "BsRcSoftCostIncreaseS",
                 "PARAMS" : {
+                    "GLOBAL_COST_PRECISION": "4",
                     "GLOBAL_COEFFICIENT_1": "2",
-                    "GLOBAL_COEFFICIENT_2": "None",
-                    "GLOBAL_COEFFICIENT_3": "None",
-                    "GLOBAL_COEFFICIENT_4": "None",
-                    "GLOBAL_COEFFICIENT_5": "None",
                     "GLOBAL_PROFIT": "1.003",
-                    "GLOBAL_AVAILABLE_CURRENCY": "1400",
-                    "INIT_RATE": "1400",
-                    "INIT_COST": "100",
-                    "INIT_QUANTITY": "None"
+                    "GLOBAL_AVAILABLE_CURRENCY": "200",
+                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.78",
+                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.78"
                 }
             }
         }
