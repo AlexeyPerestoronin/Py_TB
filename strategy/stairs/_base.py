@@ -105,14 +105,7 @@ class StairsBase:
     @classmethod
     def _RestoreFromRecoveryParameters(cls, recovery_params):
         restored_strategy = cls()
-        for key, value in recovery_params.items():
-            assigned_value = None
-            if value != "None":
-                assigned_value = _d(value)
-            restored_strategy._parameters[key] = assigned_value
-        common.TryExecute(common.Lambda(restored_strategy.SetInitRate, recovery_params[const.PARAMS.INIT_RATE]))
-        common.TryExecute(common.Lambda(restored_strategy.SetInitCost, recovery_params[const.PARAMS.INIT_COST]))
-        common.TryExecute(common.Lambda(restored_strategy.SetInitQuantity, recovery_params[const.PARAMS.INIT_QUANTITY]))
+        restored_strategy.SetAllParametersFromDict(recovery_params)
         restored_strategy.Init()
         return restored_strategy.ComputeToStep(recovery_params[const.PARAMS.STEP])
 
@@ -295,14 +288,16 @@ class StairsBase:
     # param: buy_commission_concession - new value of concession of a trade-commission for buy-order
     def SetCommissionBuy(self, buy_commission, buy_commission_concession=0.5):
         self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION] = _d(buy_commission)
-        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION] = _d(buy_commission_concession)
+        if not self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION]:
+            self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION] = _d(buy_commission_concession)
 
     # brief: set a trade-commission for sell-order
     # param: sell_commission - new value of a trade-commission for sell-order
     # param: sell_commission_concession - new value of concession of a trade-commission for sell-order
     def SetCommissionSell(self, sell_commission, sell_commission_concession=0.5):
         self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION] = _d(sell_commission)
-        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION] = _d(sell_commission_concession)
+        if not self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION]:
+            self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION] = _d(sell_commission_concession)
 
     # brief: set a trade-profit
     # param: profit - new value of a trade-profit
@@ -328,6 +323,15 @@ class StairsBase:
     # param: precision - new value of a precision
     def SetQuantityPrecision(self, precision):
         self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION] = _d(precision)
+
+    # brief: set all parameters for the strategy from dictionary
+    # param: parameters - the assign parameters
+    def SetAllParametersFromDict(self, parameters):
+        for key, value in parameters.items():
+            assigned_value = None
+            if value != "None":
+                assigned_value = _d(value)
+            self._parameters[key] = assigned_value
 
     # NOTE: Get...
 
@@ -553,7 +557,7 @@ class StairsBase:
     # param: to_step - target trade-step
     # return: deep copy of the current trade-strategy presented on the specified-step
     def ComputeToStep(self, to_step):
-        if self._first_step:
+        if self._is_initialized:
             copy_strategy = copy.deepcopy(self._first_step)
             for _ in range(1, to_step):
                 copy_strategy = copy_strategy.ComputeNextStep()
@@ -584,7 +588,9 @@ class StairsBase:
     # brief: gets string from which is possible restore trade-strategy to current state
     # return: trade-strategy restore string
     def CreateRecoveryString(self):
-        return json.dumps(self._CreateRecoveryParameters())
+        if self._is_initialized:
+            return json.dumps(self._CreateRecoveryParameters())
+        raise error.NotInitializedStrategy()
 
     # NOTE: Others methods
 

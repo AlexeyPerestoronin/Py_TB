@@ -1,26 +1,37 @@
 {
-    "public_key" : "Alexey_Perestoronin.public.key",
-    "secret_key" : "Alexey_Perestoronin.secret.key",
-    "taker_commission_promotion" : 1,
-    "maker_commission_promotion" : 1,
-    "tradings" : [
+    "CONNECTION" : {
+        "PUBLIC_KEY" : "Alexey_Perestoronin.public.key",
+        "SECRET_KEY" : "Alexey_Perestoronin.secret.key",
+        "TAKER_COMMISSION_PROMOTION" : 1,
+        "MAKER_COMMISSION_PROMOTION" : 1
+    },
+    "TRADERS" : [
         {
-            "id" : "1-SoftCostIncreaseDS",
-            "pair" : "ETH_USDT",
-            "init_cost" : 100,
-            "db_filename" : "st.sqlite",
-            "save_catalog" : ".trading",
-            "completed_policy" : {
-                "id" : "FIXED_COMPLETED_STRATEGY",
-                "params" : 100
+            "ID" : "1-SoftCostIncreaseDS",
+            "PAIR" : "ETH_USDT",
+            "INIT_COST" : 100,
+            "DB_FILENAME" : "st.sqlite",
+            "SAVE_CATALOG" : ".trading",
+            "COMPLETED_POLICY" : {
+                "ID" : "FIXED_COMPLETED_STRATEGY",
+                "PARAMS" : {
+                    "STOP_TRIGGER" : 100
+                }
             },
-            "strategy" : {
-                "id" : "SOFT_COST_INCREASE_D",
-                "profit" : 1.003,
-                "coefficient" : 1.5,
-                "quantity_precision" : 8,
-                "available_currency" : 1400,
-                "diff_subcost" : 50
+            "STRATEGY" : {
+                "ID" : "SOFT_COST_INCREASE_D",
+                "PARAMS" : {
+                    "GLOBAL_COEFFICIENT_1": "2",
+                    "GLOBAL_COEFFICIENT_2": "None",
+                    "GLOBAL_COEFFICIENT_3": "None",
+                    "GLOBAL_COEFFICIENT_4": "None",
+                    "GLOBAL_COEFFICIENT_5": "None",
+                    "GLOBAL_PROFIT": "1.003",
+                    "GLOBAL_AVAILABLE_CURRENCY": "1400",
+                    "INIT_RATE": "1400",
+                    "INIT_COST": "100",
+                    "INIT_QUANTITY": "None"
+                }
             }
         }
     ]

@@ -1,6 +1,6 @@
 import sqlite3
 
-import trader.db.__cursore as cur
+import trader.data_base.connection as con
 
 # brief: class implements up covering capsule for sqlite3.connection-class
 class Connection:
@@ -16,4 +16,4 @@ class Connection:
         self._connection.close()
 
     def GetCursore(self):
-        return cur.Cursor(self._connection)
+        return con.Cursor(self._connection)

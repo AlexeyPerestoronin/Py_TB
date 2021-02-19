@@ -1,4 +1,7 @@
-import strategy.stairs as ss
+import strategy.stairs.buy_and_sell.rate_computed as ss_buy_and_sell_rate_computed
+import strategy.stairs.buy_and_sell.cost_computed as ss_buy_and_sell_cost_computed
+import strategy.stairs.sell_and_buy.rate_computed as ss_sell_and_buy_rate_computed
+
 import strategy.const as const
 import strategy.const.errors as error
 
@@ -15,29 +18,29 @@ def DefineStrategy(id):
     # NOTE: buy-and-sell
     # NOTE: RC...
     elif id == const.ID.BsRcSimple:
-        return ss.buy_and_sell.rate_computed.BsRcSimple()
+        return ss_buy_and_sell_rate_computed.BsRcSimple()
     elif id == const.ID.BsRcDependency:
-        return ss.buy_and_sell.rate_computed.BsRcDependency()
+        return ss_buy_and_sell_rate_computed.BsRcDependency()
     elif id == const.ID.BsRcFixedBuyCostS:
-        return ss.buy_and_sell.rate_computed.BsRcFixedBuyCostS()
+        return ss_buy_and_sell_rate_computed.BsRcFixedBuyCostS()
     elif id == const.ID.BsRcFixedBuyCostD:
-        return ss.buy_and_sell.rate_computed.BsRcFixedBuyCostD()
+        return ss_buy_and_sell_rate_computed.BsRcFixedBuyCostD()
     elif id == const.ID.BsRcSoftCostIncreaseS:
-        return ss.buy_and_sell.rate_computed.BsRcSoftCostIncreaseS()
+        return ss_buy_and_sell_rate_computed.BsRcSoftCostIncreaseS()
     elif id == const.ID.BsRcSoftCostIncreaseD:
-        return ss.buy_and_sell.rate_computed.BsRcSoftCostIncreaseD()
+        return ss_buy_and_sell_rate_computed.BsRcSoftCostIncreaseD()
     # NOTE:CC...
     elif id == const.ID.BsCcSimple:
-        return ss.buy_and_sell.cost_computed.BsCcSimple()
+        return ss_buy_and_sell_cost_computed.BsCcSimple()
     elif id == const.ID.BsCcDependency:
-        return ss.buy_and_sell.cost_computed.BsCcDependency()
+        return ss_buy_and_sell_cost_computed.BsCcDependency()
     elif id == const.ID.BsCcDifficultDependency:
-        return ss.buy_and_sell.cost_computed.BsCcDifficultDependency()
+        return ss_buy_and_sell_cost_computed.BsCcDifficultDependency()
     # NOTE: sell-and-buy
     # NOTE: RC
     elif id == const.ID.SbRcSimple:
-        return ss.sell_and_buy.rate_computed.SbRcSimple()
+        return ss_sell_and_buy_rate_computed.SbRcSimple()
     elif id == const.ID.SbRcFixedSellQuantityS:
-        return ss.sell_and_buy.rate_computed.SbRcFixedSellQuantityS()
+        return ss_sell_and_buy_rate_computed.SbRcFixedSellQuantityS()
     else:
         raise error.UndefinedStrategyID()

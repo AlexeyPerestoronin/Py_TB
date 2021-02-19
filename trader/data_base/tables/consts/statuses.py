@@ -16,6 +16,7 @@ class Status:
 
     # brief: class for present all a orders' statuses
     class Order:
+        VOID = "void"
         WAIT = "wait"
         DEAL = "deal"
         CANCEL = "cancel"

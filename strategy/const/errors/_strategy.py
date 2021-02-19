@@ -1,34 +1,29 @@
-# brief: class for collect all exceptions that could arise in strategies
-class Strategy(Exception):
+class SomeErrorInTradeStrategy(Exception):
     def __init__(self):
         Exception.__init__(self)
     def __str__(self):
         return "some error in trade-strategy"
 
-# brief: exception of not initialized strategy
-class NotInitializedStrategy(Strategy):
+class NotInitializedStrategy(SomeErrorInTradeStrategy):
     def __init__(self):
-        Strategy.__init__(self)
+        SomeErrorInTradeStrategy.__init__(self)
     def __str__(self):
         return "strategy is not initialized"
 
-# brief: exception of undefined strategy
-class UndefinedStrategy(Strategy):
+class UndefinedStrategy(SomeErrorInTradeStrategy):
     def __init__(self):
-        Strategy.__init__(self)
+        SomeErrorInTradeStrategy.__init__(self)
     def __str__(self):
         return "strategy is undefined"
 
-# brief: strategy-id is forbidden to use
-class UseForbiddenStrategyID(Strategy):
+class UseForbiddenStrategyID(SomeErrorInTradeStrategy):
     def __init__(self):
-        Strategy.__init__(self)
+        SomeErrorInTradeStrategy.__init__(self)
     def __str__(self):
         return "strategy-id is forbidden to use"
 
-# brief: exception of undefined strategy-id
-class UndefinedStrategyID(Strategy):
+class UndefinedStrategyID(SomeErrorInTradeStrategy):
     def __init__(self):
-        Strategy.__init__(self)
+        SomeErrorInTradeStrategy.__init__(self)
     def __str__(self):
         return "strategy-id is undefined"
