@@ -10,7 +10,7 @@
             "ID" : "1-BsRcSoftCostIncreaseS",
             "PAIR" : "ETH_USD",
             "INIT_COST" : "15",
-            "DB_FILENAME" : "st.sqlite",
+            "DB_FILENAME" : "BD_1.sqlite",
             "SAVE_CATALOG" : ".trading",
             "COMPLETED_POLICY" : {
                 "ID" : "InfinityCP",
@@ -19,12 +19,11 @@
                 }
             },
             "STRATEGY" : {
-                "ID" : "BsRcSoftCostIncreaseS",
+                "ID" : "BsRcFixedBuyCostS",
                 "PARAMS" : {
                     "GLOBAL_COST_PRECISION": "4",
-                    "GLOBAL_COEFFICIENT_1": "2",
-                    "GLOBAL_PROFIT": "1.003",
-                    "GLOBAL_AVAILABLE_CURRENCY": "200",
+                    "GLOBAL_PROFIT": "1.0",
+                    "GLOBAL_AVAILABLE_CURRENCY": "300",
                     "GLOBAL_SELL_COMMISSION_CONCESSION": "0.78",
                     "GLOBAL_BUY_COMMISSION_CONCESSION": "0.78"
                 }

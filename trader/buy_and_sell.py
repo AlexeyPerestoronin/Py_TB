@@ -51,8 +51,10 @@ class BuyAndSell(trader.BaseSTrader):
         elif self._connection.IsOrderComplete(self._pair, initial_order_id):
             self._PreinitStrategy()
             initial_order_rate = self._connection.GetOrderRate(initial_order_id)
+            self._strategy.SetInitRate(initial_order_rate)
             initial_order_cost = self._connection.GetOrderCost2(initial_order_id)
-            self._strategy.Init(initial_order_rate, initial_order_cost)
+            self._strategy.SetInitCost(initial_order_cost)
+            self._strategy.Init()
             self._SetOrders()
 
     def _IterateTrading(self):
