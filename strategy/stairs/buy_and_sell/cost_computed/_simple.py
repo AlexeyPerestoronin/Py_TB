@@ -15,7 +15,7 @@ class BsCcSimple(ss_bs_rc.BsRcSimple):
         buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
         buy_rate = self._parameters[const.PARAMS.STEP_BUY_RATE]
         buy_cost = - ((sell_profit * sell_total_cost) - (sell_commission * sell_rate * sell_total_quantity)) / (sell_profit - (buy_commission**2 * sell_rate / buy_rate))
-        if buy_cost < 0.:
+        if self._CP.DownDecimal(buy_cost) < 0.:
             raise error.BuyCostIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_COST] = buy_cost
         self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= buy_cost
@@ -34,7 +34,7 @@ class BsCcSimple(ss_bs_rc.BsRcSimple):
         else:
             base_rate = self._parameters[const.PARAMS.INIT_RATE]
         buy_rate = base_rate - coefficient1
-        if buy_rate <= 0.:
+        if self._RP.DownDecimal(buy_rate) <= 0.:
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = buy_rate
 
@@ -48,11 +48,13 @@ class BsCcSimple(ss_bs_rc.BsRcSimple):
         self._ComputeSellQuantity()
         self._ComputeSellRate()
         self._ComputeSellCost()
-        self._ComputeSellProfit()
         # sequence of calculations 2: buy
         self._ComputeBuyRate()
         self._ComputeBuyCost()
         self._ComputeBuyQuantity()
+        # sequence of calculations 3: profit
+        self._ComputeLeftProfit()
+        self._ComputeRightProfit()
 
     @classmethod
     def GetID(cls):

@@ -54,28 +54,60 @@ class SbRcSimple(ss_sb.StairsSellBuy):
     def _ComputeBuyProfit(self):
         total_sell_quantity = self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN]
         expected_buy_quantity = self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
-        self._parameters[const.PARAMS.STEP_BUY_PROFIT] = expected_buy_quantity - total_sell_quantity
+        self._parameters[const.PARAMS.STEP_LEFT_PROFIT] = expected_buy_quantity - total_sell_quantity
 
     def _ComputeBuyRate(self):
         possible_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
         expected_buy_quantity = self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
-        self._parameters[const.PARAMS.STEP_BUY_RATE] = self.ComputeBuyRate(expected_buy_quantity, possible_buy_cost)
+        self._parameters[const.PARAMS.STEP_BUY_RATE] = possible_buy_cost / expected_buy_quantity
 
     def _ComputeBuyQuantity(self):
         profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
         total_sell_quantity = self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN]
-        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = total_sell_quantity * profit
+        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = (total_sell_quantity * profit) / buy_commission
+
+    def _ComputeLeftProfit(self):
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        total_sell_quantity = self._parameters[const.PARAMS.INIT_QUANTITY]
+        not_commission_buy_quantity = self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
+        not_commission_profit = not_commission_buy_quantity - total_sell_quantity
+        commission_buy_quantity = not_commission_buy_quantity * buy_commission
+        commission_profit = commission_buy_quantity - total_sell_quantity
+        full_commission = not_commission_profit - commission_profit
+        buy_commission_concession = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION]
+        commission_concession = full_commission * buy_commission_concession
+        step_profit_left = commission_profit + commission_concession
+        self._parameters[const.PARAMS.STEP_LEFT_PROFIT] = step_profit_left
+
+    def _ComputeRightProfit(self):
+        self._parameters[const.PARAMS.STEP_RIGHT_PROFIT] = self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CONCESSION]
 
     def _ComputeSellAndBuyParameters(self):
         # sequence of calculations 1: buy
         self._ComputeBuyQuantity()
         self._ComputeBuyCost()
         self._ComputeBuyRate()
-        self._ComputeBuyProfit()
         # sequence of calculations 2: sell
         self._ComputeSellQuantity()
         self._ComputeSellRate()
         self._ComputeSellCost()
+        # sequence of calculations 3: profit
+        self._ComputeRightProfit()
+        self._ComputeLeftProfit()
+    
+    def _ReductionPrecisionForSellAndBuyParameters(self):
+        # sequence of reduction 1: sell
+        self._parameters[const.PARAMS.STEP_SELL_COST] = self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_COST])
+        self._parameters[const.PARAMS.STEP_SELL_RATE] = self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE])
+        self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = self._QP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY])
+        # sequence of reduction 2: buy
+        self._parameters[const.PARAMS.STEP_BUY_COST] = self._CP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_COST])
+        self._parameters[const.PARAMS.STEP_BUY_RATE] = self._RP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_RATE])
+        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_QUANTITY])
+        # sequence of reduction 3: profit
+        self._parameters[const.PARAMS.STEP_LEFT_PROFIT] = self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_LEFT_PROFIT])
+        self._parameters[const.PARAMS.STEP_RIGHT_PROFIT] = self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_RIGHT_PROFIT])
 
     @classmethod
     def GetID(cls):

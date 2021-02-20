@@ -22,11 +22,6 @@ class BsRcSimple(ss_bs.StairsBuySell):
         sell_rate = self._parameters[const.PARAMS.STEP_SELL_RATE]
         total_buy_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
         self._parameters[const.PARAMS.STEP_SELL_COST] = total_buy_quantity * sell_rate
-    
-    def _ComputeSellProfit(self):
-        sell_cost = self._parameters[const.PARAMS.STEP_SELL_COST]
-        total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
-        self._parameters[const.PARAMS.STEP_SELL_PROFIT] = sell_cost - total_buy_cost
 
     def _ComputeSellRate(self):
         profit = self._parameters[const.PARAMS.GLOBAL_PROFIT]
@@ -59,7 +54,7 @@ class BsRcSimple(ss_bs.StairsBuySell):
         step_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
         step_buy_cost = self._parameters[const.PARAMS.STEP_BUY_COST]
         step_buy_rate = - (step_buy_cost * buy_commission) / (step_sell_quantity - ((profit * total_sell_cost) / (base_sell_rate * sell_commission)))
-        if step_buy_rate <= 0.:
+        if self._RP.DownDecimal(step_buy_rate) <= 0.:
             raise error.BuyRateIsLessZero()
         self._parameters[const.PARAMS.STEP_BUY_RATE] = step_buy_rate
 
@@ -68,16 +63,46 @@ class BsRcSimple(ss_bs.StairsBuySell):
         step_buy_rate = self._parameters[const.PARAMS.STEP_BUY_RATE]
         self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = step_buy_cost / step_buy_rate
 
+    def _ComputeLeftProfit(self):
+        self._parameters[const.PARAMS.STEP_LEFT_PROFIT] = self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION]
+
+    def _ComputeRightProfit(self):
+        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
+        total_buy_cost = self._parameters[const.PARAMS.INIT_COST]
+        sell_cost = self._parameters[const.PARAMS.STEP_SELL_COST]
+        not_commission_profit = sell_cost - total_buy_cost
+        commission_profit = (sell_cost * sell_commission) - total_buy_cost
+        full_commission = not_commission_profit - commission_profit
+        sell_commission_concession = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION]
+        commission_concession = full_commission * sell_commission_concession
+        step_profit_right = commission_profit + commission_concession
+        self._parameters[const.PARAMS.STEP_RIGHT_PROFIT] = step_profit_right
+
     def _ComputeSellAndBuyParameters(self):
         # sequence of calculations 1: sell
         self._ComputeSellQuantity()
         self._ComputeSellRate()
         self._ComputeSellCost()
-        self._ComputeSellProfit()
         # sequence of calculations 2: buy
         self._ComputeBuyCost()
         self._ComputeBuyRate()
         self._ComputeBuyQuantity()
+        # sequence of calculations 3: profit
+        self._ComputeLeftProfit()
+        self._ComputeRightProfit()
+
+    def _ReductionPrecisionForSellAndBuyParameters(self):
+        # sequence of reduction 1: sell
+        self._parameters[const.PARAMS.STEP_SELL_COST] = self._CP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_COST])
+        self._parameters[const.PARAMS.STEP_SELL_RATE] = self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE])
+        self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY])
+        # sequence of reduction 2: buy
+        self._parameters[const.PARAMS.STEP_BUY_COST] = self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_COST])
+        self._parameters[const.PARAMS.STEP_BUY_RATE] = self._RP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_RATE])
+        self._parameters[const.PARAMS.STEP_BUY_QUANTITY] = self._QP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_QUANTITY])
+        # sequence of reduction 3: profit
+        self._parameters[const.PARAMS.STEP_LEFT_PROFIT] = self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_LEFT_PROFIT])
+        self._parameters[const.PARAMS.STEP_RIGHT_PROFIT] = self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_RIGHT_PROFIT])
 
     @classmethod
     def GetID(cls):

@@ -53,13 +53,14 @@ class StairsBase:
             # sell(s)
             const.PARAMS.STEP_SELL_COST : None,
             const.PARAMS.STEP_SELL_RATE : None,
-            const.PARAMS.STEP_SELL_PROFIT : None,
             const.PARAMS.STEP_SELL_QUANTITY : None,
             # buy(s)
             const.PARAMS.STEP_BUY_COST : None,
             const.PARAMS.STEP_BUY_RATE : None,
-            const.PARAMS.STEP_BUY_PROFIT : None,
             const.PARAMS.STEP_BUY_QUANTITY : None,
+            # profit(s)
+            const.PARAMS.STEP_LEFT_PROFIT : None,
+            const.PARAMS.STEP_RIGHT_PROFIT : None,
         }
         self._statistic = {
             const.INFO.GLOBAL.COST : {
@@ -156,11 +157,6 @@ class StairsBase:
     def _ComputeSellCost(self):
         raise error.MethodIsNotImplemented()
 
-    # brief: compute sell-profit for current strategy-step to sell-action
-    # note1: must be redefined in child class
-    def _ComputeSellProfit(self):
-        raise error.MethodIsNotImplemented()
-
     # brief: compute sell-rate for current strategy-step to sell-action
     # note1: must be redefined in child class
     def _ComputeSellRate(self):
@@ -176,11 +172,6 @@ class StairsBase:
     def _ComputeBuyCost(self):
         raise error.MethodIsNotImplemented()
 
-    # brief: compute sell-profit for current strategy-step to buy-action
-    # note1: must be redefined in child class
-    def _ComputeBuyProfit(self):
-        raise error.MethodIsNotImplemented()
-
     # brief: compute buy-rate for current strategy-step to buy-action
     # note1: must be redefined in child class
     def _ComputeBuyRate(self):
@@ -191,9 +182,24 @@ class StairsBase:
     def _ComputeBuyQuantity(self):
         raise error.MethodIsNotImplemented()
 
+    # brief: compute left-profit for current strategy-step
+    # note1: must be redefined in child class
+    def _ComputeLeftProfit(self):
+        raise error.MethodIsNotImplemented()
+
+    # brief: compute right-profit for current strategy-step
+    # note1: must be redefined in child class
+    def _ComputeRightProfit(self):
+        raise error.MethodIsNotImplemented()
+
     # brief: compute sell and buy parameters for current strategy-step
     # note1: must be redefined in child class
     def _ComputeSellAndBuyParameters(self):
+        raise error.MethodIsNotImplemented()
+
+    # brief: reduction sell and buy parameters by its precision value
+    # note1: must be redefined in child class
+    def _ReductionPrecisionForSellAndBuyParameters(self):
         raise error.MethodIsNotImplemented()
 
     # brief: compute current strategy-step
@@ -207,6 +213,8 @@ class StairsBase:
         self._ComputeNextCoefficient5()
         # sequence of calculations 2: sell and buy params
         self._ComputeSellAndBuyParameters()
+        # sequence of calculations 3: reduction sell and buy parameters by its precision value
+        self._ReductionPrecisionForSellAndBuyParameters()
 
     # brief: migrates settings of current strategy to a new next strategy class
     def _MigrateSettingsToNextStep(self):
@@ -341,76 +349,65 @@ class StairsBase:
         return self._parameters[const.PARAMS.STEP]
 
     # brief: gets sell-cost for current step
-    # note1: must be redefined in child class
     # return: the sell-cost for current step
     def GetSellCost(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_SELL_COST]
 
     # brief: gets sell-rate for current step
-    # note1: must be redefined in child class
     # return: the sell-rate for current step
     def GetSellRate(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_SELL_RATE]
 
     # brief: gets quantity for sell-order for current step
-    # note1: must be redefined in child class
     # return: the quantity for sell-order for current step
     def GetSellQuantity(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
 
     # brief: gets buy-cost for current step
-    # note1: must be redefined in child class
     # return: the buy-cost for current step
     def GetBuyCost(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_BUY_COST]
 
     # brief: gets buy-rate for current step
-    # note1: must be redefined in child class
     # return: the buy-rate for current step
     def GetBuyRate(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_BUY_RATE]
 
     # brief: gets buy-quantity for current step
-    # note1: must be redefined in child class
     # return: the buy-quantity for current step
     def GetBuyQuantity(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
 
     # brief: gets total-activity-cost of currency in current-step
-    # note1: must be redefined in child class
     # return: total-activity-cost in current-step
     def GetTotalActivityCost(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.INIT_COST]
 
     # brief: gets total-everage-activity-rate of currency in current-step
-    # note1: must be redefined in child class
     # return: total-everage-activity-rate in current-step
     def GetTotalEverageActivityRate(self):
-        raise error.MethodIsNotImplemented()
-    
+        return self._parameters[const.PARAMS.INIT_RATE]
+
     # brief: gets profit for current trade-strategy step in left currency
-    # note1: must be redefined in child class
     # return: current profit
     def GetStepProfitLeft(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_LEFT_PROFIT]
 
     # brief: gets profit for current trade-strategy step in right currency
-    # note1: must be redefined in child class
     # return: current profit
     def GetStepProfitRight(self):
-        raise error.MethodIsNotImplemented()
+        return self._parameters[const.PARAMS.STEP_RIGHT_PROFIT]
 
     # brief: gets profit for current strategy in left currency
-    # note1: must be redefined in child class
     # return: the profit
     def GetProfitLeft(self):
-        raise error.MethodIsNotImplemented()
-    
+        return self.GetStepProfitLeft()
+
     # brief: gets profit for current strategy in right currency
     # note1: must be redefined in child class
     # return: the profit
     def GetProfitRight(self):
-        raise error.MethodIsNotImplemented()
+        return self.GetStepProfitRight()
 
     # brief: gets difference of rate between last two activity-rate
     # note1: must be redefined in child class
@@ -589,7 +586,7 @@ class StairsBase:
     # return: trade-strategy restore string
     def CreateRecoveryString(self):
         if self._is_initialized:
-            return json.dumps(self._CreateRecoveryParameters())
+            return json.dumps(self._CreateRecoveryParameters(), indent=4)
         raise error.NotInitializedStrategy()
 
     # NOTE: Others methods

@@ -55,49 +55,6 @@ class StairsBuySell(ss.StairsBase):
 
     # NOTE: Get...
 
-    def GetSellCost(self):
-        return self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_COST])
-
-    def GetSellRate(self):
-        return self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_SELL_RATE])
-
-    def GetSellQuantity(self):
-        return self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_SELL_QUANTITY])
-
-    def GetBuyCost(self):
-        return self._CP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_COST])
-
-    def GetBuyRate(self):
-        return self._RP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_RATE])
-
-    def GetBuyQuantity(self):
-        return self._QP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_QUANTITY])
-
-    def GetTotalActivityCost(self):
-        return self._CP.UpDecimal(self._parameters[const.PARAMS.INIT_COST])
-
-    def GetTotalEverageActivityRate(self):
-        return self._RP.UpDecimal(self._parameters[const.PARAMS.INIT_RATE])
-
-    def GetStepProfitLeft(self):
-        return self._CP.DownDecimal(self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION])
-
-    def GetStepProfitRight(self):
-        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
-        sell_commission_concession = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION]
-        not_commission_profit = self._parameters[const.PARAMS.STEP_SELL_PROFIT]
-        not_commission_expected_sell_quantity = self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
-        full_commission = (not_commission_expected_sell_quantity / sell_commission) - not_commission_expected_sell_quantity
-        commission_concession = full_commission * sell_commission_concession
-        step_profit_right = not_commission_profit + commission_concession
-        return self._CP.DownDecimal(step_profit_right)
-
-    def GetProfitLeft(self):
-        return self.GetStepProfitLeft()
-
-    def GetProfitRight(self):
-        return self.GetStepProfitRight()
-
     def GetDifferenceBetweenRate(self):
         last_buy_rate = None
         step_sell_rate = self._parameters[const.PARAMS.STEP_SELL_RATE]
