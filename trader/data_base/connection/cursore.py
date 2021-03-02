@@ -1,3 +1,5 @@
+import copy
+import decimal
 
 # brief: class implements up covering capsule for sqlite3.connection.cursor-class
 class Cursor:
@@ -14,7 +16,13 @@ class Cursor:
         self._cursore.close()
 
     def ExecuteOne(self, sql, *args):
-        self._cursore.execute(sql, args)
+        target_args = []
+        for arg in args:
+            if isinstance(arg, decimal.Decimal):
+                target_args.append(float(arg))
+            else:
+                target_args.append(copy.deepcopy(arg))
+        self._cursore.execute(sql, target_args)
         return self._cursore.fetchall()
 
     def ExecuteMany(self, sql, *args):

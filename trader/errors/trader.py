@@ -33,3 +33,15 @@ class UserCancelOrdersManual(Trader):
         Trader.__init__(self)
     def __str__(self):
         return "a user cancel trade-orders manual"
+
+class UseForbiddenTraderID(Trader):
+    def __init__(self):
+        Trader.__init__(self)
+    def __str__(self):
+        return "the trader-class is forbidden to use"
+
+class UndefinedTraderID(Trader):
+    def __init__(self):
+        Trader.__init__(self)
+    def __str__(self):
+        return "undefined trader id"

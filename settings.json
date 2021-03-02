@@ -7,7 +7,34 @@
     },
     "TRADERS" : [
         {
-            "ID" : "1-BsRcSoftCostIncreaseS",
+            "DESCRIPTION" : "sell-and-buy strategy first attempt - 2",
+            "IS_ACTIVE" : "False",
+            "ID" : "SellAndBuy",
+            "PAIR" : "EXM_ETH",
+            "INIT_COST" : "2500",
+            "DB_FILENAME" : "BD_1.sqlite",
+            "SAVE_CATALOG" : ".trading",
+            "COMPLETED_POLICY" : {
+                "ID" : "InfinityCP",
+                "PARAMS" : {
+                    "STOP_TRIGGER" : "None"
+                }
+            },
+            "STRATEGY" : {
+                "ID" : "BsRcFixedBuyCostS",
+                "PARAMS" : {
+                    "GLOBAL_COST_PRECISION": "8",
+                    "GLOBAL_PROFIT": "1.001",
+                    "GLOBAL_AVAILABLE_CURRENCY": "30000",
+                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.65",
+                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.65"
+                }
+            }
+        },
+        {
+            "DESCRIPTION" : "sell-and-buy strategy first attempt - 3",
+            "IS_ACTIVE" : "True",
+            "ID" : "BuyAndSell",
             "PAIR" : "ETH_USD",
             "INIT_COST" : "15",
             "DB_FILENAME" : "BD_1.sqlite",
@@ -15,17 +42,17 @@
             "COMPLETED_POLICY" : {
                 "ID" : "InfinityCP",
                 "PARAMS" : {
-                    "STOP_TRIGGER" : 100
+                    "STOP_TRIGGER" : "None"
                 }
             },
             "STRATEGY" : {
                 "ID" : "BsRcFixedBuyCostS",
                 "PARAMS" : {
                     "GLOBAL_COST_PRECISION": "4",
-                    "GLOBAL_PROFIT": "1.0",
+                    "GLOBAL_PROFIT": "1.001",
                     "GLOBAL_AVAILABLE_CURRENCY": "300",
-                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.78",
-                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.78"
+                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.65",
+                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.65"
                 }
             }
         }

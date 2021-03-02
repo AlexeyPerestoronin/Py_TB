@@ -24,10 +24,12 @@ def CreateExchangeConnector(settings):
 def CreateTraders(settings, connector):
     all_traders = []
     for trading_setting in settings[trader_const.SETTINGS.TRADERS.Key]:
-        new_trader = trader.BuyAndSell()
-        new_trader.SetConnection(connector)
-        new_trader.SetParameters(trading_setting)
-        all_traders.append(new_trader)
+        if trading_setting[trader_const.SETTINGS.TRADERS.IS_ACTIVE.Key] == "True":
+            trader_id = trading_setting[trader_const.SETTINGS.TRADERS.ID.Key]
+            new_trader = trader.DefineTrader(trader_id)
+            new_trader.SetConnection(connector)
+            new_trader.SetParameters(trading_setting)
+            all_traders.append(new_trader)
     return all_traders
 
 def main():

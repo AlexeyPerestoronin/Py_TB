@@ -15,7 +15,7 @@ import strategy.stairs as ss
 import strategy.const.errors as strategy_error
 
 # brief: implements simple logic for trading
-class BaseSTrader:
+class BaseTrader:
     def __init__(self):
         self._trading_params = None
         # class(es)
@@ -31,9 +31,7 @@ class BaseSTrader:
 
     # brief: checks if target trade-strategy is possible to realize current trader
     def _CheckStrategyClass(self):
-        if isinstance(self._strategy, ss.buy_and_sell.StairsBuySell):
-            return
-        raise trader_error.UnavailableTradeStrategyForTrader()
+        raise trader_error.MethodIsNotImplemented()
 
     # brief: checks if target completed-policy is possible to realize current trader
     def _CheckCompletedPolicyClass(self):
@@ -166,3 +164,11 @@ class BaseSTrader:
                     self._WaitTrading()
         except table_error.TraderIsNotCreate:
             pass
+        except:
+            raise trader_error.Trader()
+
+    # brief: gets id of the current class of trader
+    # return: id of the current class of trader
+    @classmethod
+    def GetID(cls):
+        return trader_const.IDs.BASE_TRADER.Key

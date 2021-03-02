@@ -224,11 +224,11 @@ class Exmo():
     def IsItSellOrder(self, order_id):
         return self.GetOrderDeals(order_id)["type"] == "sell"
 
-    # brief: gets cost of the trade-order by its id (for first currency in trade-pair)
+    # brief: gets cost of the trade-order by its id (for left currency in trade-pair)
     # note1: if trade-pair is BTC_USD the cost will given for BTC
     # param: order_id - target trade-order id
     # return: cost of the tarde-order
-    def GetOrderCost1(self, order_id):
+    def GetOrderCostLeft(self, order_id):
         order_deals = self.GetOrderDeals(order_id)
         if order_deals["type"] == "sell":
             return float(order_deals["out_amount"])
@@ -237,11 +237,11 @@ class Exmo():
         else:
             raise "unspecified type of order: {}".format(order_deals)
 
-    # brief: gets cost of the trade-order by its id (for second currency in trade-pair)
+    # brief: gets cost of the trade-order by its id (for right currency in trade-pair)
     # note1: if trade-pair is BTC_USD the cost will given for USD
     # param: order_id - target trade-order id
     # return: cost for the trade-order
-    def GetOrderCost2(self, order_id):
+    def GetOrderCostRight(self, order_id):
         order_deals = self.GetOrderDeals(order_id)
         if order_deals["type"] == "sell":
             return float(order_deals["in_amount"])
