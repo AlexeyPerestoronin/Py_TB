@@ -31,8 +31,10 @@ class BuyAndSell(trader.BaseTrader):
         raise strategy_error.NotInitializedStrategy()
 
     def _SetOrders(self):
-        self._db.SetSellOrder(self._connection.CreateOrder_Sell(self._pair, self._strategy.GetSellQuantity(), self._strategy.GetSellRate()))
-        self._db.SetBuyOrder(self._connection.CreateOrder_Buy(self._pair, self._strategy.GetBuyQuantity(), self._strategy.GetBuyRate()))
+        sell_order_id = self._connection.CreateOrder_Sell(self._pair, self._strategy.GetSellQuantity(), self._strategy.GetSellRate())
+        self._db.SetSellOrder(sell_order_id)
+        buy_order_id = self._connection.CreateOrder_Buy(self._pair, self._strategy.GetBuyQuantity(), self._strategy.GetBuyRate())
+        self._db.SetBuyOrder(buy_order_id)
 
     def _FinishTrading(self):
         self._db.FinishCurrentStrategy()
@@ -54,14 +56,15 @@ class BuyAndSell(trader.BaseTrader):
         initial_order_id = self._db.GetInitOrder()
         if self._connection.IsOrderCancel(initial_order_id):
             self._FinishTrading()
-        elif self._connection.IsOrderComplete(self._pair, initial_order_id):
-            self._PreinitStrategy()
-            initial_order_rate = self._connection.GetOrderRate(initial_order_id)
-            self._strategy.SetInitRate(initial_order_rate)
-            initial_order_cost = self._connection.GetOrderCostRight(initial_order_id)
-            self._strategy.SetInitCost(initial_order_cost)
-            self._strategy.Init()
-            self._SetOrders()
+        elif not self._connection.IsOrderComplete(self._pair, initial_order_id):
+            return
+        self._PreinitStrategy()
+        initial_order_rate = self._connection.GetOrderRate(initial_order_id)
+        self._strategy.SetInitRate(initial_order_rate)
+        initial_order_cost = self._connection.GetOrderCostRight(initial_order_id)
+        self._strategy.SetInitCost(initial_order_cost)
+        self._strategy.Init()
+        self._SetOrders()
 
     def _IterateTrading(self):
         self._strategy = type(self._strategy).RestoreFromRecoveryString(self._db.GetStrategyRecovery())
