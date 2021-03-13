@@ -7,7 +7,6 @@ sys.path.insert(0, os.getcwd())
 import trader
 import connection as con
 import common.faf as faf
-import strategy.stairs as ss
 
 PARAMS_1 = \
 {

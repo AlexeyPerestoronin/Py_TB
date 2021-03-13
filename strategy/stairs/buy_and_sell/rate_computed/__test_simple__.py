@@ -4,7 +4,6 @@ import unittest
 
 sys.path.insert(0, os.getcwd())
 
-import common
 import common.faf as faf
 
 import strategy.const as const
@@ -12,7 +11,7 @@ import strategy.const as const
 from strategy.stairs.__test_Strairs__ import SrairsStandartTest
 from strategy.stairs.buy_and_sell.rate_computed import BsRcSimple
 
-class Test4(SrairsStandartTest):
+class Test1(SrairsStandartTest):
     def setUp(self):
         SrairsStandartTest.setUp(self)
         self._stairs = BsRcSimple()

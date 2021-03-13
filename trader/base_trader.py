@@ -11,8 +11,6 @@ import trader.data_base.tables.errors as table_error
 import trader.data_base.tables.consts as table_const
 
 import strategy
-import strategy.stairs as ss
-import strategy.const.errors as strategy_error
 
 # brief: implements simple logic for trading
 class BaseTrader:

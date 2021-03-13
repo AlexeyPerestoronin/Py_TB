@@ -1,9 +1,7 @@
-import math
 import copy
 import json
 import decimal
 
-import common
 import common.faf as faf
 import common.precision as c_precision
 
@@ -12,7 +10,7 @@ import strategy.const.errors as error
 
 _d = decimal.Decimal
 
-# brief: implements template for all simple strairs trade-strategy
+# brief: implements template for all simple stairs trade-strategy
 class StairsBase:
     def __init__(self):
         # flags(s)
@@ -24,43 +22,43 @@ class StairsBase:
         # setting(s)
         self._parameters = {
             # global(s)
-            const.PARAMS.GLOBAL_COST_PRECISION : None,
-            const.PARAMS.GLOBAL_RATE_PRECISION : None,
-            const.PARAMS.GLOBAL_QUANTITY_PRECISION : None,
-            const.PARAMS.GLOBAL_COEFFICIENT_1 : None,
-            const.PARAMS.GLOBAL_COEFFICIENT_2 : None,
-            const.PARAMS.GLOBAL_COEFFICIENT_3 : None,
-            const.PARAMS.GLOBAL_COEFFICIENT_4 : None,
-            const.PARAMS.GLOBAL_COEFFICIENT_5 : None,
-            const.PARAMS.GLOBAL_PROFIT : None,
-            const.PARAMS.GLOBAL_AVAILABLE_CURRENCY : None,
-            const.PARAMS.GLOBAL_SELL_COMMISSION : None,
-            const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION : None,
-            const.PARAMS.GLOBAL_BUY_COMMISSION : None,
-            const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION : None,
+            const.PARAMS.GLOBAL_COST_PRECISION.Key : None,
+            const.PARAMS.GLOBAL_RATE_PRECISION.Key : None,
+            const.PARAMS.GLOBAL_QUANTITY_PRECISION.Key : None,
+            const.PARAMS.GLOBAL_COEFFICIENT_1.Key : None,
+            const.PARAMS.GLOBAL_COEFFICIENT_2.Key : None,
+            const.PARAMS.GLOBAL_COEFFICIENT_3.Key : None,
+            const.PARAMS.GLOBAL_COEFFICIENT_4.Key : None,
+            const.PARAMS.GLOBAL_COEFFICIENT_5.Key : None,
+            const.PARAMS.GLOBAL_PROFIT.Key : None,
+            const.PARAMS.GLOBAL_AVAILABLE_CURRENCY.Key : None,
+            const.PARAMS.GLOBAL_SELL_COMMISSION.Key : None,
+            const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION.Key : None,
+            const.PARAMS.GLOBAL_BUY_COMMISSION.Key : None,
+            const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION.Key : None,
             # init(s)
-            const.PARAMS.INIT_RATE : None,
-            const.PARAMS.INIT_COST : None,
-            const.PARAMS.INIT_QUANTITY : None,
+            const.PARAMS.STEP_INIT_RATE.Key : None,
+            const.PARAMS.STEP_INIT_COST.Key : None,
+            const.PARAMS.STEP_INIT_QUANTITY.Key : None,
             # steps(s)
-            const.PARAMS.STEP : None,
-            const.PARAMS.STEP_COEFFICIENT_1 : None,
-            const.PARAMS.STEP_COEFFICIENT_2 : None,
-            const.PARAMS.STEP_COEFFICIENT_3 : None,
-            const.PARAMS.STEP_COEFFICIENT_4 : None,
-            const.PARAMS.STEP_COEFFICIENT_5 : None,
-            const.PARAMS.STEP_AVAILABLE_CURRENCY : None,
+            const.PARAMS.STEP_NUMBER.Key : None,
+            const.PARAMS.STEP_COEFFICIENT_1.Key : None,
+            const.PARAMS.STEP_COEFFICIENT_2.Key : None,
+            const.PARAMS.STEP_COEFFICIENT_3.Key : None,
+            const.PARAMS.STEP_COEFFICIENT_4.Key : None,
+            const.PARAMS.STEP_COEFFICIENT_5.Key : None,
+            const.PARAMS.STEP_AVAILABLE_CURRENCY.Key : None,
             # sell(s)
-            const.PARAMS.STEP_SELL_COST : None,
-            const.PARAMS.STEP_SELL_RATE : None,
-            const.PARAMS.STEP_SELL_QUANTITY : None,
+            const.PARAMS.STEP_SELL_COST.Key : None,
+            const.PARAMS.STEP_SELL_RATE.Key : None,
+            const.PARAMS.STEP_SELL_QUANTITY.Key : None,
             # buy(s)
-            const.PARAMS.STEP_BUY_COST : None,
-            const.PARAMS.STEP_BUY_RATE : None,
-            const.PARAMS.STEP_BUY_QUANTITY : None,
+            const.PARAMS.STEP_BUY_COST.Key : None,
+            const.PARAMS.STEP_BUY_RATE.Key : None,
+            const.PARAMS.STEP_BUY_QUANTITY.Key : None,
             # profit(s)
-            const.PARAMS.STEP_LEFT_PROFIT : None,
-            const.PARAMS.STEP_RIGHT_PROFIT : None,
+            const.PARAMS.STEP_LEFT_PROFIT.Key : None,
+            const.PARAMS.STEP_RIGHT_PROFIT.Key : None,
         }
         self._statistic = {
             const.INFO.GLOBAL.COST : {
@@ -84,11 +82,11 @@ class StairsBase:
     # brief: initializes classes for precision computing
     def _InitPrecisions(self):
         if not self._CP:
-            self._CP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_COST_PRECISION])
+            self._CP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_COST_PRECISION.Key])
         if not self._RP:
-            self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION])
+            self._RP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION.Key])
         if not self._QP:
-            self._QP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION])
+            self._QP = c_precision.Round(self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION.Key])
 
     # brief: creates dictionary with recovery parameters by which is possible restore trade-strategy to current state
     # return: recovery dictionary
@@ -96,7 +94,7 @@ class StairsBase:
         recovery_params = {}
         for key, value in self._first_step._parameters.items():
             recovery_params[key] = str(value)
-        recovery_params[const.PARAMS.STEP] = self._parameters[const.PARAMS.STEP]
+        recovery_params[const.PARAMS.STEP_NUMBER.Key] = self._parameters[const.PARAMS.STEP_NUMBER.Key]
         return recovery_params
 
     # brief: restores trade-strategy state by recovery parameters
@@ -108,7 +106,7 @@ class StairsBase:
         restored_strategy = cls()
         restored_strategy.SetAllParametersFromDict(recovery_params)
         restored_strategy.Init()
-        return restored_strategy.ComputeToStep(recovery_params[const.PARAMS.STEP])
+        return restored_strategy.ComputeToStep(recovery_params[const.PARAMS.STEP_NUMBER.Key])
 
     # collects statistic for all steps of trade-strategy
     # note1: must be redefined in child class
@@ -118,27 +116,27 @@ class StairsBase:
     # brief: compute next coefficient-1
     # note1: must be redefined in child class if it is need
     def _ComputeNextCoefficient1(self):
-        self._parameters[const.PARAMS.STEP_COEFFICIENT_1] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1]
+        self._parameters[const.PARAMS.STEP_COEFFICIENT_1.Key] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1.Key]
 
     # brief: compute next coefficient-2
     # note1: must be redefined in child class if it is need
     def _ComputeNextCoefficient2(self):
-        self._parameters[const.PARAMS.STEP_COEFFICIENT_2] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2]
+        self._parameters[const.PARAMS.STEP_COEFFICIENT_2.Key] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2.Key]
 
     # brief: compute next coefficient-3
     # note1: must be redefined in child class if it is need
     def _ComputeNextCoefficient3(self):
-        self._parameters[const.PARAMS.STEP_COEFFICIENT_3] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_3]
+        self._parameters[const.PARAMS.STEP_COEFFICIENT_3.Key] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_3.Key]
 
     # brief: compute next coefficient-4
     # note1: must be redefined in child class if it is need
     def _ComputeNextCoefficient4(self):
-        self._parameters[const.PARAMS.STEP_COEFFICIENT_4] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_4]
+        self._parameters[const.PARAMS.STEP_COEFFICIENT_4.Key] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_4.Key]
 
     # brief: compute next coefficient-5
     # note1: must be redefined in child class if it is need
     def _ComputeNextCoefficient5(self):
-        self._parameters[const.PARAMS.STEP_COEFFICIENT_5] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_5]
+        self._parameters[const.PARAMS.STEP_COEFFICIENT_5.Key] = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_5.Key]
 
     # brief: gets buy-rate for next-step
     # note1: must be redefined in child class
@@ -219,7 +217,7 @@ class StairsBase:
     # brief: migrates settings of current strategy to a new next strategy class
     def _MigrateSettingsToNextStep(self):
         self._next_step = type(self)()
-        # migrate step 1: precission(s)
+        # migrate step 1: precision(s)
         self._next_step._CP = self._CP
         self._next_step._RP = self._RP
         self._next_step._QP = self._QP
@@ -242,7 +240,7 @@ class StairsBase:
     def Init(self):
         self._InitPrecisions()
         if self._previous_step:
-            self._parameters[const.PARAMS.STEP] += 1
+            self._parameters[const.PARAMS.STEP_NUMBER.Key] += 1
         else:
             self._InitializeFirstStep()
             self._first_step = self
@@ -254,83 +252,83 @@ class StairsBase:
     # brief: sets initialization rate
     # param: init_rate - the new value of initialization rate
     def SetInitRate(self, init_rate):
-        self._parameters[const.PARAMS.INIT_RATE] =_d(init_rate)
+        self._parameters[const.PARAMS.STEP_INIT_RATE.Key] = _d(init_rate)
 
     # brief: sets initialization cost
     # param: init_cost - the new value of initialization cost
     def SetInitCost(self, init_cost):
-        self._parameters[const.PARAMS.INIT_COST] =_d(init_cost)
+        self._parameters[const.PARAMS.STEP_INIT_COST.Key] = _d(init_cost)
 
     # brief: sets initialization quantity
     # param: init_quantity - the new value of initialization quantity
     def SetInitQuantity(self, init_quantity):
-        self._parameters[const.PARAMS.INIT_QUANTITY] =_d(init_quantity)
+        self._parameters[const.PARAMS.STEP_INIT_QUANTITY.Key] = _d(init_quantity)
 
     # brief: set the 1-coefficient
     # param: coefficient - new value for 1-coefficient
     def SetCoefficient1(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1] = _d(coefficient)
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_1.Key] = _d(coefficient)
 
     # brief: set the 2-coefficient
     # param: coefficient - new value for 2-coefficient
     def SetCoefficient2(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2] = _d(coefficient)
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2.Key] = _d(coefficient)
 
     # brief: set the 3-coefficient
     # param: coefficient - new value for 3-coefficient
     def SetCoefficient3(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_3] = _d(coefficient)
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_3.Key] = _d(coefficient)
 
     # brief: set the 4-coefficient
     # param: coefficient - new value for 4-coefficient
     def SetCoefficient4(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_4] = _d(coefficient)
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_4.Key] = _d(coefficient)
 
     # brief: set the 5-coefficient
     # param: coefficient - new value for 5-coefficient
     def SetCoefficient5(self, coefficient):
-        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_5] = _d(coefficient)
+        self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_5.Key] = _d(coefficient)
 
     # brief: set a trade-commission for buy-order
     # param: buy_commission - new value of a trade-commission for buy-order
     # param: buy_commission_concession - new value of concession of a trade-commission for buy-order
     def SetCommissionBuy(self, buy_commission, buy_commission_concession=0.5):
-        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION] = _d(buy_commission)
-        if not self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION]:
-            self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION] = _d(buy_commission_concession)
+        self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION.Key] = _d(buy_commission)
+        if not self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION.Key]:
+            self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION_CONCESSION.Key] = _d(buy_commission_concession)
 
     # brief: set a trade-commission for sell-order
     # param: sell_commission - new value of a trade-commission for sell-order
     # param: sell_commission_concession - new value of concession of a trade-commission for sell-order
     def SetCommissionSell(self, sell_commission, sell_commission_concession=0.5):
-        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION] = _d(sell_commission)
-        if not self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION]:
-            self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION] = _d(sell_commission_concession)
+        self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION.Key] = _d(sell_commission)
+        if not self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION.Key]:
+            self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION_CONCESSION.Key] = _d(sell_commission_concession)
 
     # brief: set a trade-profit
     # param: profit - new value of a trade-profit
     def SetProfit(self, profit):
-        self._parameters[const.PARAMS.GLOBAL_PROFIT] = _d(profit)
+        self._parameters[const.PARAMS.GLOBAL_PROFIT.Key] = _d(profit)
 
     # brief: set a available currency
     # param: available_currency - new value of a available currency
     def SetAvailableCurrency(self, available_currency):
-        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY] = _d(available_currency)
+        self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY.Key] = _d(available_currency)
 
     # brief: set a precision of all mathematical operations performs with trade-cost
     # param: precision - new value of a precision
     def SetCostPrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_COST_PRECISION] = _d(precision)
+        self._parameters[const.PARAMS.GLOBAL_COST_PRECISION.Key] = _d(precision)
 
     # brief: set a precision of all mathematical operations performs with trade-rate
     # param: precision - new value of a precision
     def SetRatePrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION] = _d(precision)
+        self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION.Key] = _d(precision)
 
     # brief: set a precision of all mathematical operations performs with volume of currency
     # param: precision - new value of a precision
     def SetQuantityPrecision(self, precision):
-        self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION] = _d(precision)
+        self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION.Key] = _d(precision)
 
     # brief: set all parameters for the strategy from dictionary
     # param: parameters - the assign parameters
@@ -346,57 +344,57 @@ class StairsBase:
     # brief: gets current trade-strategy step
     # return: current trade-strategy step
     def GetStep(self):
-        return self._parameters[const.PARAMS.STEP]
+        return self._parameters[const.PARAMS.STEP_NUMBER.Key]
 
     # brief: gets sell-cost for current step
     # return: the sell-cost for current step
     def GetSellCost(self):
-        return self._parameters[const.PARAMS.STEP_SELL_COST]
+        return self._parameters[const.PARAMS.STEP_SELL_COST.Key]
 
     # brief: gets sell-rate for current step
     # return: the sell-rate for current step
     def GetSellRate(self):
-        return self._parameters[const.PARAMS.STEP_SELL_RATE]
+        return self._parameters[const.PARAMS.STEP_SELL_RATE.Key]
 
     # brief: gets quantity for sell-order for current step
     # return: the quantity for sell-order for current step
     def GetSellQuantity(self):
-        return self._parameters[const.PARAMS.STEP_SELL_QUANTITY]
+        return self._parameters[const.PARAMS.STEP_SELL_QUANTITY.Key]
 
     # brief: gets buy-cost for current step
     # return: the buy-cost for current step
     def GetBuyCost(self):
-        return self._parameters[const.PARAMS.STEP_BUY_COST]
+        return self._parameters[const.PARAMS.STEP_BUY_COST.Key]
 
     # brief: gets buy-rate for current step
     # return: the buy-rate for current step
     def GetBuyRate(self):
-        return self._parameters[const.PARAMS.STEP_BUY_RATE]
+        return self._parameters[const.PARAMS.STEP_BUY_RATE.Key]
 
     # brief: gets buy-quantity for current step
     # return: the buy-quantity for current step
     def GetBuyQuantity(self):
-        return self._parameters[const.PARAMS.STEP_BUY_QUANTITY]
+        return self._parameters[const.PARAMS.STEP_BUY_QUANTITY.Key]
 
     # brief: gets total-activity-cost of currency in current-step
     # return: total-activity-cost in current-step
     def GetTotalActivityCost(self):
-        return self._parameters[const.PARAMS.INIT_COST]
+        return self._parameters[const.PARAMS.STEP_INIT_COST.Key]
 
-    # brief: gets total-everage-activity-rate of currency in current-step
-    # return: total-everage-activity-rate in current-step
-    def GetTotalEverageActivityRate(self):
-        return self._parameters[const.PARAMS.INIT_RATE]
+    # brief: gets total-average-activity-rate of currency in current-step
+    # return: total-average-activity-rate in current-step
+    def GetTotalAverageActivityRate(self):
+        return self._parameters[const.PARAMS.STEP_INIT_RATE.Key]
 
     # brief: gets profit for current trade-strategy step in left currency
     # return: current profit
     def GetStepProfitLeft(self):
-        return self._parameters[const.PARAMS.STEP_LEFT_PROFIT]
+        return self._parameters[const.PARAMS.STEP_LEFT_PROFIT.Key]
 
     # brief: gets profit for current trade-strategy step in right currency
     # return: current profit
     def GetStepProfitRight(self):
-        return self._parameters[const.PARAMS.STEP_RIGHT_PROFIT]
+        return self._parameters[const.PARAMS.STEP_RIGHT_PROFIT.Key]
 
     # brief: gets profit for current strategy in left currency
     # return: the profit
@@ -415,51 +413,51 @@ class StairsBase:
     def GetDifferenceBetweenRate(self):
         raise error.MethodIsNotImplemented()
 
-    # param: getted full information about current step of the trading-strategy
+    # param: get full information about current step of the trading-strategy
     # return: full information about trading-strategy
     def GetInfo(self):
         info = {
             const.INFO.GLOBAL : {
                 const.INFO.GLOBAL.TOTAL_AVAILABLE_CURRENCY : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY],
-                    const.INFO.DESCRIPTION : "total availbale currency for the trade-strategy"
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_AVAILABLE_CURRENCY.Key],
+                    const.INFO.DESCRIPTION : "total available currency for the trade-strategy"
                 },
                 const.INFO.GLOBAL.BUY_COMMISSION : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION.Key],
                     const.INFO.DESCRIPTION : "commission for buy transactions imposed by the trading-exchange"
                 },
                 const.INFO.GLOBAL.SELL_COMMISSION : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION.Key],
                     const.INFO.DESCRIPTION : "commission for sale transactions imposed by the trading-exchange"
                 },
                 const.INFO.GLOBAL.PRICE_PRECISION : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_RATE_PRECISION.Key],
                     const.INFO.DESCRIPTION : "precision for computing of trade-rate"
                 },
                 const.INFO.GLOBAL.QUANTITY_PRECISION : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_QUANTITY_PRECISION.Key],
                     const.INFO.DESCRIPTION : "precision for computing of currency-volume"
                 },
                 const.INFO.GLOBAL.PROFIT : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_PROFIT],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.GLOBAL_PROFIT.Key],
                     const.INFO.DESCRIPTION : "profit realized by the trading-strategy"
                 },
                 const.INFO.GLOBAL.QUANTITY : {
                     const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CLEAN],
-                        const.INFO.DESCRIPTION : "total-clean volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-clean volume of currency at the beginning of the current step"
                     },
                     const.INFO.GLOBAL.QUANTITY.TOTAL_REAL : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_REAL],
-                        const.INFO.DESCRIPTION : "total-real volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-real volume of currency at the beginning of the current step"
                     },
                     const.INFO.GLOBAL.QUANTITY.TOTAL_LOST : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_LOST],
-                        const.INFO.DESCRIPTION : "total-lost volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-lost volume of currency at the beginning of the current step"
                     },
                     const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION : {
                         const.INFO.VALUE : self._statistic[const.INFO.GLOBAL.QUANTITY][const.INFO.GLOBAL.QUANTITY.TOTAL_CONCESSION],
-                        const.INFO.DESCRIPTION : "total-concession of commission for volume of currency at the beggining of the current step"
+                        const.INFO.DESCRIPTION : "total-concession of commission for volume of currency at the beginning of the current step"
                     },
                 },
                 const.INFO.GLOBAL.COST : {
@@ -473,7 +471,7 @@ class StairsBase:
                     },
                     const.INFO.GLOBAL.COST.TOTAL_LOST : {
                         "value" : self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_LOST],
-                        "description" : "losted cost at the current trading-strategy step"
+                        "description" : "lost cost at the current trading-strategy step"
                     },
                     const.INFO.GLOBAL.COST.TOTAL_CONCESSION : {
                         "value" : self._statistic[const.INFO.GLOBAL.COST][const.INFO.GLOBAL.COST.TOTAL_CONCESSION],
@@ -487,7 +485,7 @@ class StairsBase:
                     const.INFO.DESCRIPTION : "the difference between last buy-rate and current sell-rate"
                 },
                 const.INFO.STEP.AVAILABLE_CURRENCY : {
-                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY],
+                    const.INFO.VALUE : self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY.Key],
                     const.INFO.DESCRIPTION : "residual amount of available currency for buy-order"
                 },
                 const.INFO.STEP.TOTAL_ACTIVITY_COST : {
@@ -495,8 +493,8 @@ class StairsBase:
                     const.INFO.DESCRIPTION : "total-activity-cost of currency in current step"
                 },
                 const.INFO.STEP.TOTAL_EVERAGE_AVERAGE_RATE : {
-                    const.INFO.VALUE : self.GetTotalEverageActivityRate(),
-                    const.INFO.DESCRIPTION : "total-everage-activity-rate for total-cost at the in current step"
+                    const.INFO.VALUE : self.GetTotalAverageActivityRate(),
+                    const.INFO.DESCRIPTION : "total-average-activity-rate for total-cost at the in current step"
                 },
                 const.INFO.STEP.PROFIT_EXPECTED_LEFT : {
                     const.INFO.VALUE : self.GetProfitLeft(),
@@ -567,7 +565,7 @@ class StairsBase:
     # param: sell_cost - desired cost of sell
     # return: trade-rate for sell
     def ComputeSellRate(self, sell_quantity, sell_cost):
-        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION]
+        sell_commission = self._parameters[const.PARAMS.GLOBAL_SELL_COMMISSION.Key]
         commission_cost = sell_cost / sell_commission
         return commission_cost / sell_quantity
 
@@ -576,7 +574,7 @@ class StairsBase:
     # param: buy_cost - target cost of buy
     # return: trade-rate for sell
     def ComputeBuyRate(self, buy_quantity, buy_cost):
-        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION]
+        buy_commission = self._parameters[const.PARAMS.GLOBAL_BUY_COMMISSION.Key]
         commission_quantity = buy_quantity / buy_commission
         return buy_cost / commission_quantity
 

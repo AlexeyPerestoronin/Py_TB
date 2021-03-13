@@ -29,7 +29,7 @@ class SrairsStandartTest(unittest.TestCase):
         self.assertEqual(self._stairs.GetBuyCost(), target_compare_strategy.GetBuyCost())
         self.assertEqual(self._stairs.GetBuyQuantity(), target_compare_strategy.GetBuyQuantity())
         self.assertEqual(self._stairs.GetTotalActivityCost(), target_compare_strategy.GetTotalActivityCost())
-        self.assertEqual(self._stairs.GetTotalEverageActivityRate(), target_compare_strategy.GetTotalEverageActivityRate())
+        self.assertEqual(self._stairs.GetTotalAverageActivityRate(), target_compare_strategy.GetTotalAverageActivityRate())
 
     def SaveAndRestoreFromString(self, step_1=1, step_2=2):
         self._stairs = self._stairs.ComputeToStep(step_1)

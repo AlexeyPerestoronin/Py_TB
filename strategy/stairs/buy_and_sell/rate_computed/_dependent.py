@@ -10,18 +10,18 @@ class BsRcDependency(ss_bs_rc.BsRcSimple):
 
     def _GetNextSellRate(self):
         if self._previous_step:
-            return self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
+            return self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE.Key]
         else:
-            return self._parameters[const.PARAMS.INIT_RATE]
+            return self._parameters[const.PARAMS.STEP_INIT_RATE.Key]
 
     def _ComputeBuyCost(self):
-        ceff1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1]
+        ceff1 = self._parameters[const.PARAMS.STEP_COEFFICIENT_1.Key]
         base_cost = None
         if self._previous_step:
-            base_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
+            base_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST.Key]
         else:
-            base_cost = self._parameters[const.PARAMS.INIT_COST]
-        self._parameters[const.PARAMS.STEP_BUY_COST] = base_cost * ceff1
+            base_cost = self._parameters[const.PARAMS.STEP_INIT_COST.Key]
+        self._parameters[const.PARAMS.STEP_BUY_COST.Key] = base_cost * ceff1
 
     @classmethod
     def GetID(cls):

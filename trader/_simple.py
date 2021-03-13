@@ -68,13 +68,13 @@ class Simple:
             return "no truview: some error on Exchange side"
 
     def _PreinitTrader(self):
-        self._pair = self._params[t_const.Params.Trading.PAIR]
-        self._init_cost = self._params[t_const.Params.Trading.INIT_COST]
-        self._db_filename = self._params[t_const.Params.Trading.DB_FILENAME]
-        self._save_catalog = self._params[t_const.Params.Trading.SAVE_CATALOG]
+        self._pair = self._params[t_const.Params.Trading.Key.PAIR]
+        self._init_cost = self._params[t_const.Params.Trading.Key.STEP_INIT_COST]
+        self._db_filename = self._params[t_const.Params.Trading.Key.DB_FILENAME]
+        self._save_catalog = self._params[t_const.Params.Trading.Key.SAVE_CATALOG]
 
     def _PreinitStrategy(self):
-        s_key = t_const.Params.Trading.Strategy
+        s_key = t_const.Params.Trading.Key.Strategy
         self._strategy = strategy.DefineStrategy(self._strategy_params[s_key.ID])
         self._CheckStrategyClass()
         for key in self._strategy_params.keys():
@@ -105,7 +105,7 @@ class Simple:
         self._db.Init(os.path.join(self._save_catalog, self._db_filename), json.dumps(self._params, indent=4))
 
     def _InitCP(self):
-        cp_key = t_const.Params.Trading.CompletedPolicy
+        cp_key = t_const.Params.Trading.Key.CompletedPolicy
         self._completed_policy = t_cp.DefineCompletePolicy(self._completed_policy_params[cp_key.ID])
         self._CheckCompletedPolicyClass()
         self._completed_policy.Init(self._completed_policy_params[cp_key.PARAMS], self._db.GetCompletedStrategy)

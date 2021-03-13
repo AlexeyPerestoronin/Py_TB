@@ -6,7 +6,7 @@ class BsRcFixedBuyCostD(ss_bs_rc.BsRcDependency):
         ss_bs_rc.BsRcDependency.__init__(self)
 
     def _ComputeBuyCost(self):
-        self._parameters[const.PARAMS.STEP_BUY_COST] = self._first_step._parameters[const.PARAMS.INIT_COST]
+        self._parameters[const.PARAMS.STEP_BUY_COST.Key] = self._first_step._parameters[const.PARAMS.STEP_INIT_COST.Key]
 
     @classmethod
     def GetID(cls):

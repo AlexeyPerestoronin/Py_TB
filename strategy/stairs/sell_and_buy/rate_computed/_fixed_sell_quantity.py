@@ -15,15 +15,15 @@ class SbRcFixedSellQuantityS(ss_sb_rc.SbRcSimple):
         ss_sb_rc.SbRcSimple.__init__(self)
 
     def _ComputeSellQuantity(self):
-        first_step_sell_quantity = self._first_step._parameters[const.PARAMS.INIT_QUANTITY]
-        self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] -= first_step_sell_quantity
-        if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY] < 0.:
+        first_step_sell_quantity = self._first_step._parameters[const.PARAMS.STEP_INIT_QUANTITY.Key]
+        self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY.Key] -= first_step_sell_quantity
+        if self._parameters[const.PARAMS.STEP_AVAILABLE_CURRENCY.Key] < 0.:
             raising_error = error.ExceededAvailableCurrency()
-            raising_error.SetBuyQuantity(self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_QUANTITY]))
-            raising_error.SetBuyCost(self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_COST]))
-            raising_error.SetBuyRate(self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_RATE]))
+            raising_error.SetBuyQuantity(self._QP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_QUANTITY.Key]))
+            raising_error.SetBuyCost(self._CP.DownDecimal(self._parameters[const.PARAMS.STEP_BUY_COST.Key]))
+            raising_error.SetBuyRate(self._RP.UpDecimal(self._parameters[const.PARAMS.STEP_BUY_RATE.Key]))
             raise raising_error
-        self._parameters[const.PARAMS.STEP_SELL_QUANTITY] = first_step_sell_quantity
+        self._parameters[const.PARAMS.STEP_SELL_QUANTITY.Key] = first_step_sell_quantity
 
     @classmethod
     def GetID(cls):

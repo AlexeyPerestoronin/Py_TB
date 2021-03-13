@@ -5,3 +5,4 @@
 **/*.txt
 **/*.public.key
 **/*.secret.key
+**/*.idea

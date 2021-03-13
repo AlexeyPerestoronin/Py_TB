@@ -7,11 +7,11 @@ class BsCcDifficultDependency(ss_bs_cc.BsCcDependency):
 
     def _GetNextSellRate(self):
         base_rate = None
-        coefficient2 = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2]
+        coefficient2 = self._parameters[const.PARAMS.GLOBAL_COEFFICIENT_2.Key]
         if self._previous_step:
-            base_rate = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE]
+            base_rate = self._previous_step._parameters[const.PARAMS.STEP_BUY_RATE.Key]
         else:
-            base_rate = self._parameters[const.PARAMS.INIT_RATE]
+            base_rate = self._parameters[const.PARAMS.STEP_INIT_RATE.Key]
         base_rate -= coefficient2
         return base_rate
 

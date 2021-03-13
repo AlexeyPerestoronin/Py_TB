@@ -7,13 +7,13 @@ class BsRcSoftCostIncreaseD(ss_bs_rc.BsRcDependency):
 
     def _ComputeBuyCost(self):
         current_step_buy_cost = None
-        first_step_buy_cost = self._first_step._parameters[const.PARAMS.INIT_COST]
+        first_step_buy_cost = self._first_step._parameters[const.PARAMS.STEP_INIT_COST.Key]
         if self._previous_step:
-            previous_step_buy_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST]
+            previous_step_buy_cost = self._previous_step._parameters[const.PARAMS.STEP_BUY_COST.Key]
             current_step_buy_cost = previous_step_buy_cost + first_step_buy_cost
         else:
             current_step_buy_cost = first_step_buy_cost
-        self._parameters[const.PARAMS.STEP_BUY_COST] = current_step_buy_cost
+        self._parameters[const.PARAMS.STEP_BUY_COST.Key] = current_step_buy_cost
 
     @classmethod
     def GetID(cls):

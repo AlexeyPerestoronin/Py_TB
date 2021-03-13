@@ -4,7 +4,6 @@ import unittest
 
 sys.path.insert(0, os.getcwd())
 
-import common
 import common.faf as faf
 
 import strategy.const as const
@@ -16,16 +15,15 @@ class Test4(SrairsStandartTest):
     def setUp(self):
         SrairsStandartTest.setUp(self)
         self._stairs = BsRcFixedBuyCostS()
-        self._stairs.SetAvailableCurrency("1400")
+        self._stairs.SetAvailableCurrency("300")
         self._stairs.SetCommissionBuy("0.996")
         self._stairs.SetCommissionSell("0.996")
-        self._stairs.SetCoefficient1("2")
         self._stairs.SetCostPrecision("4")
         self._stairs.SetRatePrecision("4")
         self._stairs.SetQuantityPrecision("8")
-        self._stairs.SetProfit("1.003")
-        self._stairs.SetInitRate("1400")
-        self._stairs.SetInitCost("100")
+        self._stairs.SetProfit("1.0")
+        self._stairs.SetInitRate("2018")
+        self._stairs.SetInitCost("15")
         self._stairs.Init()
 
     # brief: testing identification of strategy-id

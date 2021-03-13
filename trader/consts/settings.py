@@ -1,7 +1,6 @@
 from common import CONSTANT as C
 from common import CREATE_CONSTANT as CC
 
-# brief: class collects all key-values for access to fields in launch-parameters
 class SETTINGS(metaclass=C("PARAMS")):
     class CONNECTION(metaclass=C("CONNECTION")):
         PUBLIC_KEY = CC("PUBLIC_KEY")
