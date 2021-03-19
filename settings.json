@@ -32,12 +32,12 @@
             }
         },
         {
-            "DESCRIPTION" : "sell-and-buy strategy first attempt - 3",
+            "DESCRIPTION" : "sell-and-buy strategy first attempt - 2",
             "IS_ACTIVE" : "True",
             "ID" : "BuyAndSell",
             "PAIR" : "ETH_USD",
-            "INIT_COST" : "15",
-            "DB_FILENAME" : "BD_1.sqlite",
+            "INIT_COST" : "65",
+            "DB_FILENAME" : "BD_2.sqlite",
             "SAVE_CATALOG" : ".trading",
             "COMPLETED_POLICY" : {
                 "ID" : "InfinityCP",
@@ -49,10 +49,10 @@
                 "ID" : "BsRcFixedBuyCostS",
                 "PARAMS" : {
                     "GLOBAL_COST_PRECISION": "4",
-                    "GLOBAL_PROFIT": "1.001",
-                    "GLOBAL_AVAILABLE_CURRENCY": "300",
-                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.65",
-                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.65"
+                    "GLOBAL_PROFIT": "1.0015",
+                    "GLOBAL_AVAILABLE_CURRENCY": "895",
+                    "GLOBAL_SELL_COMMISSION_CONCESSION": "0.53",
+                    "GLOBAL_BUY_COMMISSION_CONCESSION": "0.53"
                 }
             }
         }

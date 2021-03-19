@@ -62,9 +62,7 @@ class Test_Exmo(unittest.TestCase):
         faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserCancelledOrders.log", json.dumps(self._exmo.GetUserCancelledOrders(), indent=4))
 
     def GetUserDeals(self):
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-USDT_RUB.log", json.dumps(self._exmo.GetUserDeals("USDT_RUB"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-BTC_USDT.log", json.dumps(self._exmo.GetUserDeals("BTC_USDT"), indent=4))
-        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-ETH_USDT.log", json.dumps(self._exmo.GetUserDeals("ETH_USDT"), indent=4))
+        faf.SaveContentToFile2(faf.SplitPath1(sys.argv[0]), "GetUserDeals-USDT_RUB.log", json.dumps(self._exmo.GetUserDeals("ETH_USD"), indent=4))
 
     def GetOrderDeals(self):
         self.assertRaises(c_errors.OrderIsNotFoundByID, self._exmo.GetOrderDeals, "44333222111")
@@ -97,7 +95,7 @@ class Test_Exmo(unittest.TestCase):
         # self.GetUserBalance()
         # self.GetUserOpenOrders()
         # self.GetUserCancelledOrders()
-        # self.GetUserDeals()
+        self.GetUserDeals()
         # self.GetOrderDeals()
         # self.CreateOrder()
         # self.ComputeUserBalanceIn()

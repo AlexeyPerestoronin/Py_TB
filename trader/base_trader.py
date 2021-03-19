@@ -64,12 +64,16 @@ class BaseTrader:
         self._db_filename = self._trading_params[trader_const.SETTINGS.TRADERS.DB_FILENAME.Key]
         self._save_catalog = self._trading_params[trader_const.SETTINGS.TRADERS.SAVE_CATALOG.Key]
 
-    # brief: preinitialize trade-strategy
-    def _PreinitStrategy(self):
+    # brief: defines target trade-strategy class
+    def _DefineStrategy(self):
         strategy_settings = self._trading_params[trader_const.SETTINGS.TRADERS.STRATEGY.Key]
         strategy_id = strategy_settings[trader_const.SETTINGS.TRADERS.STRATEGY.ID.Key]
         self._strategy = strategy.DefineStrategy(strategy_id)
         self._CheckStrategyClass()
+
+    # brief: performs setup defined trade-strategy class by means values received from Exchange
+    def _SetupStrategy(self):
+        strategy_settings = self._trading_params[trader_const.SETTINGS.TRADERS.STRATEGY.Key]
         strategy_initial_parameters = strategy_settings[trader_const.SETTINGS.TRADERS.STRATEGY.PARAMS.Key]
         self._strategy.SetAllParametersFromDict(strategy_initial_parameters)
         quantity_precision = self._connection.GetQuantityPrecisionForPair(self._pair)
@@ -79,6 +83,11 @@ class BaseTrader:
         taker_commission = self._connection.GetTakerCommission(self._pair)
         self._strategy.SetCommissionSell(taker_commission)
         self._strategy.SetCommissionBuy(taker_commission)
+
+    # brief: preinit defined targer trade-strategy class
+    def _PreinitStrategy(self):
+        self._DefineStrategy()
+        self._SetupStrategy()
 
     # brief: initialize data-base
     def _InitDB(self):
@@ -140,7 +149,7 @@ class BaseTrader:
     # brief: initialize trader
     def Init(self):
         self._InitTraderSettings()
-        self._PreinitStrategy()
+        self._DefineStrategy()
         self._InitDB()
         self._InitCP()
 
